@@ -1,115 +1,21 @@
-name: Publish RogueRust Release
+name: Legacy Public Publisher (Disabled)
+
+# Public releases are now built and published exclusively by
+# RogueAssassin/Oxide.Ext.RogueRust-Source after its protected build succeeds.
+# This workflow remains manual-only as a visible compatibility marker and must
+# not react to release tags or rebuild assets from the public repository root.
 
 on:
-  push:
-    tags:
-      - 'v*'
   workflow_dispatch:
-    inputs:
-      version:
-        description: 'Release version, for example 1.9.0'
-        required: true
-        type: string
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  publish:
-    runs-on: windows-latest
+  disabled:
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Resolve release version
-        id: version
-        shell: pwsh
+      - name: Explain release ownership
         run: |
-          if ('${{ github.event_name }}' -eq 'workflow_dispatch') {
-            $version = '${{ inputs.version }}'.TrimStart('v')
-            $tag = "v$version"
-          } else {
-            $tag = '${{ github.ref_name }}'
-            $version = $tag.TrimStart('v')
-          }
-          if ($version -notmatch '^\d+\.\d+\.\d+([.-][0-9A-Za-z.-]+)?$') {
-            throw "Invalid release version: $version"
-          }
-          "version=$version" >> $env:GITHUB_OUTPUT
-          "tag=$tag" >> $env:GITHUB_OUTPUT
-
-      - name: Validate release DLL
-        shell: pwsh
-        run: |
-          $dll = Join-Path $PWD 'Oxide.Ext.RogueRust.dll'
-          if (-not (Test-Path $dll)) {
-            throw 'Oxide.Ext.RogueRust.dll must exist in the repository root before publishing.'
-          }
-          if ((Get-Item $dll).Length -le 0) {
-            throw 'Oxide.Ext.RogueRust.dll is empty.'
-          }
-          $assemblyVersion = [Reflection.AssemblyName]::GetAssemblyName($dll).Version.ToString(3)
-          if ($assemblyVersion -ne '${{ steps.version.outputs.version }}') {
-            throw "DLL assembly version $assemblyVersion does not match release version ${{ steps.version.outputs.version }}."
-          }
-
-      - name: Generate secure updater assets
-        shell: pwsh
-        run: |
-          $version = '${{ steps.version.outputs.version }}'
-          $tag = '${{ steps.version.outputs.tag }}'
-          $dll = Join-Path $PWD 'Oxide.Ext.RogueRust.dll'
-          $sha = (Get-FileHash -Path $dll -Algorithm SHA256).Hash.ToLowerInvariant()
-          $published = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
-          $downloadUrl = "https://github.com/${{ github.repository }}/releases/download/$tag/Oxide.Ext.RogueRust.dll"
-
-          $manifest = [ordered]@{
-            Product = 'RogueRust.ProtectedCore'
-            Version = $version
-            Channel = 0
-            PublishedUtc = $published
-            DownloadUrl = $downloadUrl
-            Sha256 = $sha
-            Signature = ''
-            KeyId = ''
-            MinimumApiLevel = 8
-          }
-          $manifest | ConvertTo-Json -Depth 4 | Set-Content -Path 'update-manifest.json' -Encoding UTF8
-          "$sha  Oxide.Ext.RogueRust.dll" | Set-Content -Path 'SHA256SUMS.txt' -Encoding ASCII
-
-          $releaseInfo = [ordered]@{
-            version = $version
-            tag = $tag
-            sha256 = $sha
-            manifest = "https://github.com/${{ github.repository }}/releases/latest/download/update-manifest.json"
-          }
-          $releaseInfo | ConvertTo-Json -Depth 3 | Set-Content -Path 'release-info.json' -Encoding UTF8
-
-      - name: Publish GitHub Release
-        shell: pwsh
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          $tag = '${{ steps.version.outputs.tag }}'
-          $version = '${{ steps.version.outputs.version }}'
-          $prerelease = $version -match '[-]'
-
-          if (gh release view $tag 2>$null) {
-            gh release upload $tag Oxide.Ext.RogueRust.dll update-manifest.json SHA256SUMS.txt release-info.json --clobber
-          } else {
-            $args = @('release','create',$tag,'Oxide.Ext.RogueRust.dll','update-manifest.json','SHA256SUMS.txt','release-info.json','--title',"RogueRust $version",'--generate-notes')
-            if ($prerelease) { $args += '--prerelease' }
-            gh @args
-          }
-
-      - name: Verify published updater manifest
-        shell: pwsh
-        run: |
-          $url = 'https://github.com/${{ github.repository }}/releases/download/${{ steps.version.outputs.tag }}/update-manifest.json'
-          $published = Invoke-RestMethod -Uri $url -Headers @{ 'Cache-Control' = 'no-cache' }
-          if ($published.Version -ne '${{ steps.version.outputs.version }}') {
-            throw 'Published updater manifest version verification failed.'
-          }
-          if ($published.Sha256 -ne (Get-FileHash '.\Oxide.Ext.RogueRust.dll' -Algorithm SHA256).Hash.ToLowerInvariant()) {
-            throw 'Published updater manifest SHA-256 verification failed.'
-          }
+          echo "Public release publishing is owned by RogueAssassin/Oxide.Ext.RogueRust-Source."
+          echo "No build or publish action is performed from the public repository."
