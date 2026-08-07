@@ -2,11 +2,13 @@
 
 ## Manifest URL
 
-ProtectedCore reads the updater URL from the process environment variable:
+RogueRust should use the permanent public manifest pointer:
 
 ```text
-ROGUERUST_UPDATE_MANIFEST_URL=https://github.com/RogueAssassin/Oxide.Ext.RogueRust/releases/latest/download/update-manifest.json
+ROGUERUST_UPDATE_MANIFEST_URL=https://raw.githubusercontent.com/RogueAssassin/Oxide.Ext.RogueRust/main/update-manifest.json
 ```
+
+This URL is maintained automatically by the private source repository after every successful protected build and public publish. Unlike GitHub's `/releases/latest/` URL, it can point to RC/prerelease builds as well as stable releases.
 
 Automatic updates are enabled whenever that URL exists, unless explicitly disabled with:
 
@@ -18,6 +20,7 @@ Recommended settings:
 
 ```text
 ROGUERUST_AUTO_UPDATE=true
+ROGUERUST_UPDATE_MANIFEST_URL=https://raw.githubusercontent.com/RogueAssassin/Oxide.Ext.RogueRust/main/update-manifest.json
 ROGUERUST_UPDATE_INITIAL_DELAY_MINUTES=2
 ROGUERUST_UPDATE_INTERVAL_MINUTES=60
 ```
@@ -26,11 +29,11 @@ These variables must be present in the environment of the process that starts `R
 
 ## Windows launch script
 
-Add the variables before the line that starts RustDedicated:
+Set the values before starting RustDedicated:
 
 ```bat
 @echo off
-set "ROGUERUST_UPDATE_MANIFEST_URL=https://github.com/RogueAssassin/Oxide.Ext.RogueRust/releases/latest/download/update-manifest.json"
+set "ROGUERUST_UPDATE_MANIFEST_URL=https://raw.githubusercontent.com/RogueAssassin/Oxide.Ext.RogueRust/main/update-manifest.json"
 set "ROGUERUST_AUTO_UPDATE=true"
 set "ROGUERUST_UPDATE_INITIAL_DELAY_MINUTES=2"
 set "ROGUERUST_UPDATE_INTERVAL_MINUTES=60"
@@ -42,30 +45,29 @@ When RogueRust Manager starts the server, add these values to the manager's serv
 
 ## Publishing a release
 
-1. Replace the root `Oxide.Ext.RogueRust.dll` with the newly built and protected DLL.
-2. Commit and push the DLL to `main`.
-3. Confirm the DLL assembly version matches the intended release version.
-4. Create and push a tag:
+The private source repository is the only release authority:
 
-```powershell
-git checkout main
-git pull
-git tag -a v1.9.0 -m "RogueRust 1.9.0"
-git push origin v1.9.0
+```text
+RogueAssassin/Oxide.Ext.RogueRust-Source
+    -> protected build
+    -> validation
+    -> public release assets
+    -> update-manifest.json on public main
+    -> RogueAssassin/Oxide.Ext.RogueRust
 ```
 
-The `Publish RogueRust Release` workflow will:
+The public repository does not rebuild the DLL. It hosts the already-built protected DLL, ZIP, manifests, checksums, and release metadata.
 
-- validate the DLL and tag versions match;
-- calculate the DLL SHA-256;
-- generate `update-manifest.json`;
-- generate `SHA256SUMS.txt` and `release-info.json`;
-- create or update the GitHub Release;
-- attach the direct DLL and generated updater assets;
-- verify the published manifest and hash.
+Each public release contains:
 
-The workflow can also be started manually from **Actions → Publish RogueRust Release → Run workflow**. Enter the version without the `v` prefix.
+- `Oxide.Ext.RogueRust.dll`
+- `RogueRust.manifest.json`
+- `update-manifest.json`
+- `SHA256SUMS.txt`
+- `release-info.json`
+- release ZIP and ZIP checksum
+- `BUILD_REPORT.txt`
 
 ## Update behaviour
 
-ProtectedCore checks the manifest after the configured initial delay and then at the configured interval. A newer DLL is downloaded, SHA-256 verified, backed up, and staged. The running extension is not hot-swapped. Stop the server, run the staged `Apply-RogueRustUpdate.ps1`, and restart the server.
+RogueRust checks the permanent manifest pointer after the configured initial delay and at the configured interval. When a newer compatible version is found, the DLL is downloaded, SHA-256 verified, backed up, and staged as a pending update. The running extension is not hot-swapped; the staged update is applied during the server update/restart workflow.
