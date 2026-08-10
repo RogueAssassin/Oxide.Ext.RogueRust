@@ -4,85 +4,151 @@
 
 # RogueRust — Oxide / CarbonMod Extension Framework DLL
 
-**RogueRust 1.8.0 Stable** is an Oxide-first extension framework for Rust servers, with CarbonMod support through Carbon's Oxide-compatible runtime. It gives plugin developers one shared, versioned DLL for UI, commands, persistence, scheduling, workload coordination, HTTP, databases, world queries, diagnostics, pooling, security, integrations and other common server infrastructure.
+**RogueRust 2.1.0** is an Oxide-first extension framework for Rust servers, with CarbonMod support through its Oxide-compatible runtime surface. It provides one shared DLL for plugin UI, commands, scheduling, workload coordination, databases, HTTP, image caching, world queries, diagnostics, lifecycle ownership, pooling, security and common developer infrastructure.
 
-Instead of every plugin creating its own timers, JSON stores, CUI callback system, HTTP queues, database connections and diagnostic tooling, RogueRust provides those facilities as lifecycle-owned services behind one SDK.
+RogueRust is not intended to replace Oxide or Carbon. It sits above the normal Rust/Oxide plugin environment and gives RogueRust-aware plugins a consistent SDK so they do not each need to implement their own CUI framework, command router, timers, HTTP queues, database plumbing and cleanup logic.
 
-> **Design contract:** Oxide/uMod is the canonical API target. Carbon compatibility is additive. RogueRust plugins should not require Carbon-specific assemblies or APIs.
+> **Runtime contract:** Oxide/uMod is the canonical API target. Carbon support is compatibility-first and should not require RogueRust plugins to compile against Carbon-specific assemblies.
 
-## Why RogueRust exists
+## What changed from 1.8.0 to 2.1.0
 
-RogueRust is the common foundation underneath high-performance Rust plugins. It centralises infrastructure normally duplicated across plugins and automatically cleans up owned resources when a plugin unloads or a player disconnects.
+The 1.8.0 release established the client-safe RogueUI and stable callback baseline. The 1.9–2.1 line expands that stable foundation rather than replacing it.
 
-Server owners get consistent diagnostics and shared infrastructure. Plugin developers can concentrate on gameplay and UI rather than repeatedly implementing framework code.
+- **1.8.0 Stable** — validated RogueUI reconciliation, stable server-side UI actions, windows/headers, notifications, confirmations, pagination and responsive layouts.
+- **1.9.0** — replaced extension-side host command registration with native Rust hook command dispatch. RogueRust no longer depends on `AddChatCommand`/`AddConsoleCommand` overload compatibility.
+- **1.9.1** — introduced the native FileStorage-backed ImageLibrary, native `ItemIcon(itemId, skinId)` support and direct host configuration layout/migration.
+- **2.0.x** — unified the 2.x release baseline and made Unity `ImageConversion` runtime-resolved so RogueRust stays net48-compatible with current Rust server assemblies.
+- **2.1.0** — performance hardening: lazy ImageLibrary validation, debounced/atomic image metadata writes, source/decode limits, cached ImageConversion reflection, globally bounded HTTP execution, more efficient database batching, public documentation cleanup and a dedicated samples release asset.
 
-## Included in 1.8.0
+See [CHANGELOG.md](CHANGELOG.md) for the full 1.x → 2.1.0 history and [FEATURES.md](FEATURES.md) for the complete feature catalogue.
 
-| Area | What RogueRust provides |
-| --- | --- |
-| **RogueUI** | Oxide CUI document builder, stable callbacks/actions, per-player view state, unchanged-render suppression, conservative safe partial replacement, atomic structural rebuilds, layouts, windows, tabs, badges, toggles, inputs, progress, modals, confirmations, pagination and toast helpers. |
-| **Commands** | `[RogueCommand]`, aliases, usage/description metadata, permissions, cooldowns, validation, chat/console bridges and owner cleanup. |
-| **Persistence** | Typed data/configuration helpers, cache service, serialization, local SQLite and optional MySQL/MariaDB connections. |
-| **Scheduling** | Delays, repeating jobs, cron/absolute scheduling, cancellation and owner-scoped cleanup. |
-| **Workload coordination** | Throttle, debounce, next-tick coalescing and unique repeating work to reduce duplicate hot-hook/timer activity. |
-| **HTTP & messaging** | Async HTTP helpers, request ownership/cancellation, internal transport and Discord webhook support. |
-| **World services** | Player lookup, nearby players, grid conversion, terrain, entities, monuments, topology, spawns, pathfinding and terrain analysis. |
-| **Developer services** | Capability/dependency registry, plugin manifests, adapters, profiling, runtime metrics, circuit breakers, logging, pooling and service exploration. |
-| **Advanced utilities** | Image cache, map rendering, loot selection, entity snapshots/serialization, binary serialization and font metadata. |
-| **Security & release** | Artifact-integrity service, protected release pipeline, manifests, SHA-256 release assets and update checks. |
+## Why server owners use RogueRust
 
-## Runtime support
+RogueRust centralises infrastructure normally duplicated by individual plugins. When compatible plugins use the framework, the server gains one lifecycle owner for common resources, one diagnostic surface and fewer independently implemented timers, queues, databases and UI callback systems.
+
+The performance philosophy is conservative: skip work when nothing changed, batch related work, bound network concurrency, keep Unity/Rust access on the game thread, and prefer predictable client-safe CUI operations over risky micro-optimisations.
+
+## Installation
 
 ### Oxide / uMod
 
-Oxide is RogueRust's primary runtime contract. For a normal Oxide Rust server, stop the server and copy `Oxide.Ext.RogueRust.dll` to:
-
-```text
-RustDedicated_Data/Managed/
-```
-
-Start the server and verify the extension with:
+Stop the server and install the public `Oxide.Ext.RogueRust.dll` in the normal Oxide extension/managed location used by your server build. Start the server and verify:
 
 ```text
 roguerust.version
 roguerust.status
+roguerust.readiness
 ```
 
 ### CarbonMod
 
-RogueRust also supports Carbon through its Oxide compatibility layer. Use Carbon's Oxide-style extension location for `Oxide.Ext.RogueRust.dll`, restart the server, and use the same RogueRust plugins and SDK surface. No Carbon-specific dependency is required by the public RogueRust SDK.
+Use Carbon's Oxide-compatible extension loading location for `Oxide.Ext.RogueRust.dll`, then restart the server. RogueRust plugins use the same public SDK on both runtimes.
 
-Do not copy development assemblies from `References/` to a production server.
+Do **not** copy development-only assemblies from the source `References/` folder into production plugin folders.
+
+## Public release downloads
+
+Each public 2.1.x GitHub release is intended to provide:
+
+- `Oxide.Ext.RogueRust.dll` — protected framework DLL for server installation.
+- `Oxide.Ext.RogueRust-v2.1.0-release.zip` — DLL, manifests, README, changelog, features and license.
+- `Oxide.Ext.RogueRust-v2.1.0-samples.zip` — example RogueRust plugins and project templates.
+- SHA-256 checksum files and release/build metadata.
+
+**Samples:**
+`https://github.com/RogueAssassin/Oxide.Ext.RogueRust/releases/download/v2.1.0/Oxide.Ext.RogueRust-v2.1.0-samples.zip`
+
+Public releases:
+`https://github.com/RogueAssassin/Oxide.Ext.RogueRust/releases`
+
+## Main framework areas
+
+| Area | What it provides |
+| --- | --- |
+| **RogueUI** | Rust/Oxide CUI documents, stable callbacks/actions, per-player UI state, unchanged-render suppression, safe reconciliation, windows, tabs, controls, modals, pagination, notifications and layouts. |
+| **ImageLibrary** | Native remote-image queue/cache backed by Rust FileStorage, CRC reuse, stale-entry recovery, item/skin icon helpers and 2.1.0 performance/memory limits. |
+| **Commands** | `[RogueCommand]`, aliases, permissions, cooldowns, typed arguments, validation and native Rust-hook dispatch. |
+| **Data/config** | Typed plugin data/configuration helpers plus shared cache and migration-aware configuration handling. |
+| **Databases** | Local SQLite plus optional MySQL/MariaDB, migrations, parameterized queries and transaction-backed batches. |
+| **Scheduler/workloads** | Delay/repeat/cron jobs, throttle, debounce, coalescing and unique repeated workloads. |
+| **HTTP/networking** | Async HTTP, retry/cancellation, per-host pacing, Discord support and global bounded execution. |
+| **World services** | Player, entity, terrain, monument, topology, spawn, map/grid, pathfinding and terrain-analysis helpers. |
+| **Diagnostics** | Service/kernel health, runtime metrics, profiler, logs, pools, circuit breakers, DB/network/UI diagnostics and readiness checks. |
+| **Developer platform** | Capability registry, dependency manifests, adapters, plugin SDK, lifecycle cleanup, serialization and advanced utility services. |
+
+## Native ImageLibrary — SteamID question
+
+**A player SteamID is not required. A Steam Web API key is not required by the core ImageLibrary either.**
+
+RogueRust stores normalized images in Rust `FileStorage` against the server `CommunityEntity`. The optional `imageId` argument is only a cache variant identifier—commonly useful for a skin/workshop ID—and is not treated as player identity.
+
+Typical usage:
+
+```csharp
+string? crc = ImageLibrary.GetOrQueue(
+    "event.logo",
+    "https://cdn.example.com/event-logo.png",
+    imageId: 0,
+    callback: _ => RedrawUi(player));
+```
+
+Then use the returned FileStorage CRC in RogueUI:
+
+```csharp
+if (crc != null)
+    ui.Image("MyPlugin.Logo", "MyPlugin.Main", new RogueUiRect("0.05 0.60", "0.25 0.90"), crc);
+```
+
+For normal Rust item/skin previews, prefer native item rendering where practical:
+
+```csharp
+ui.ItemIcon("MyPlugin.Item", "MyPlugin.Main", rect, itemId, skinId);
+```
+
+### ImageLibrary performance behavior in 2.1.0
+
+- FileStorage PNG validation occurs lazily once per cached CRC/runtime community entity; normal later reads are dictionary-only.
+- Stale CRCs are removed from metadata and can be re-downloaded from their registered URL.
+- Remote source payloads over **8 MiB** are rejected before decode.
+- Decoded images over **4096×4096** are rejected.
+- Normalized PNGs over **3 MiB** are rejected.
+- Unity ImageConversion reflection methods are cached after first successful discovery.
+- Metadata changes are coalesced into a short delayed save instead of rewriting `images.json` for every completed image.
+- Metadata is serialized from a true locked snapshot and written through a temporary file/replace path.
+- Downloads remain deliberately sequential in the image queue to avoid Texture2D/decode memory spikes on the game server.
 
 ## Administrator commands
 
 | Command | Purpose |
 | --- | --- |
-| `roguerust.version` | Show the loaded RogueRust version. |
+| `roguerust.version` | Loaded framework version. |
 | `roguerust.status` | High-level framework and RogueUI status. |
-| `roguerust.kernel` | Kernel, service, capability and module health. |
-| `roguerust.health` | Logger, profiler and circuit-breaker health. |
-| `roguerust.readiness` | Runtime/release readiness summary. |
-| `roguerust.services` | Explore registered services. |
-| `roguerust.commands` | Registered commands and generated usage. |
-| `roguerust.sdk` | Plugin manifests and dependency validation. |
-| `roguerust.adapters` | Integration/provider status. |
-| `roguerust.world` | World/entity/terrain/monument/spawn diagnostics. |
-| `roguerust.jobs` | Scheduler and cron diagnostics. |
-| `roguerust.network` | HTTP/internal transport diagnostics. |
-| `roguerust.database` | Database and migration diagnostics. |
-| `roguerust.data` | Typed data-file diagnostics. |
-| `roguerust.discord` | Discord webhook diagnostics. |
+| `roguerust.readiness` | Release/runtime readiness summary. |
+| `roguerust.kernel` | Kernel, modules, services and capability health. |
+| `roguerust.health` | Logger/profiler/circuit-breaker health. |
 | `roguerust.performance` | Runtime, GC, thread and profiler diagnostics. |
+| `roguerust.services` | Registered service exploration. |
+| `roguerust.commands` | Registered RogueRust command metadata. |
+| `roguerust.sdk` | Plugin manifests/dependency information. |
+| `roguerust.adapters` | Adapter/provider status. |
+| `roguerust.world` | World/entity/terrain/monument/spawn diagnostics. |
+| `roguerust.jobs` | Scheduler diagnostics. |
+| `roguerust.network` | HTTP/internal transport diagnostics. |
+| `roguerust.database` | Database/migration diagnostics. |
+| `roguerust.data` | Typed data/config diagnostics. |
+| `roguerust.discord` | Discord integration diagnostics. |
 | `roguerust.logs` | Recent RogueRust warnings/errors. |
 | `roguerust.pools` | Object-pool diagnostics. |
 | `roguerust.security` | Artifact-integrity status. |
-| `roguerust.advanced` | Advanced service diagnostics. |
+| `roguerust.advanced` | Advanced services status. |
 | `roguerust.update` | Trigger an update check. |
+| `roguerust.exec <command> [args...]` | Execute a RogueRust command from local console/RCON. |
+
+Internal UI commands (`roguerust.ui.callback` and `roguerust.ui.close`) are framework plumbing and are not intended as normal administrator commands.
 
 ## Building a RogueRust plugin
 
-The preferred model is to inherit from `RogueRustPlugin` and reference the installed `Oxide.Ext.RogueRust.dll` alongside normal Rust/Oxide managed references.
+The preferred model is to inherit from `RogueRustPlugin` and reference the installed `Oxide.Ext.RogueRust.dll` alongside your normal Rust/Oxide managed references.
 
 ```csharp
 using Oxide.Ext.RogueRust.Plugins;
@@ -90,8 +156,8 @@ using Oxide.Ext.RogueRust.SDK;
 
 namespace Oxide.Plugins;
 
-[Info("RogueHello", "YourName", "1.0.0")]
-[Description("Minimal RogueRust example")]
+[Info("RogueHello", "YourName", "2.1.0")]
+[Description("Minimal RogueRust command example")]
 public sealed class RogueHello : RogueRustPlugin
 {
     [RogueCommand(
@@ -109,11 +175,20 @@ public sealed class RogueHello : RogueRustPlugin
 }
 ```
 
-RogueRust handles command registration, permission, cooldown, validation and unload cleanup.
+RogueRust owns command metadata and applies permission/cooldown/argument handling through its native command pipeline.
 
-## RogueUI quick start
+## Native command lifecycle
 
-RogueUI is built on Rust/Oxide CUI. Structural navigation is intentionally conservative: identical documents are skipped; safe isolated leaves may be replaced selectively; tabs, modals, buttons and structural transitions rebuild atomically for client stability.
+RogueRust no longer depends on extension-side `AddChatCommand`, `AddConsoleCommand`, `RemoveChatCommand` or `RemoveConsoleCommand` overloads.
+
+- player chat commands dispatch through Rust command hooks before normal fallback;
+- RCON commands dispatch through RogueRust's RCON hook path;
+- local server console/RCON can use `roguerust.exec`;
+- unknown commands continue into the normal Rust/Oxide/Carbon pipeline.
+
+This avoids the runtime CLR overload mismatch that affected earlier dual-runtime command registration.
+
+## RogueUI example
 
 ```csharp
 private void OpenDashboard(BasePlayer player)
@@ -134,7 +209,7 @@ private void OpenDashboard(BasePlayer player)
 
     RogueUiDocument ui = CreateUi("Example.Main")
         .Panel("Example.Main", "Overlay", RogueUiRect.Centered(0.58f, 0.56f), cursorEnabled: true)
-        .WindowHeader("Example.Header", "Example.Main", "ROGUE DASHBOARD", "Powered by RogueRust", "Example.Main")
+        .WindowHeader("Example.Header", "Example.Main", "ROGUE DASHBOARD", "Example.Main", "Powered by RogueRust")
         .Tab("Example.Overview", "Example.Main", new RogueUiRect("0.05 0.76", "0.27 0.84"), "Overview", overview, page == "overview")
         .Tab("Example.Metrics", "Example.Main", new RogueUiRect("0.29 0.76", "0.51 0.84"), "Metrics", metrics, page == "metrics");
 
@@ -142,7 +217,55 @@ private void OpenDashboard(BasePlayer player)
 }
 ```
 
-Use UI state for temporary presentation state only. Persistent gameplay data belongs in the data/database services.
+RogueUI's stable policy is intentionally conservative:
+
+- identical document → **send nothing**;
+- one safe isolated leaf change → **selective replacement may be used**;
+- navigation, buttons, inputs, modals, hierarchy/structural changes or multiple coupled changes → **atomic document rebuild**.
+
+That policy was chosen after live-client testing exposed the risks of aggressively using Rust CUI `update:true` on arbitrary objects.
+
+## Scheduler and workload helpers
+
+```csharp
+Delay(TimeSpan.FromSeconds(5), RunOnce, "run-once");
+Repeat(TimeSpan.FromMinutes(5), Maintenance, "maintenance");
+
+Throttle("scan", TimeSpan.FromMilliseconds(250), ScanNearbyEntities);
+Debounce("save", TimeSpan.FromSeconds(1), SaveState);
+CoalesceNextTick("ui-refresh", RefreshUi);
+RepeatUnique("maintenance", TimeSpan.FromSeconds(30), Maintenance);
+```
+
+These are preferred over creating multiple independent timers for the same logical work.
+
+## Database usage
+
+For a single local Rust server, Rogue-owned SQLite is the normal default. Use MySQL/MariaDB when data must be shared between multiple servers, a website/control panel or other external services.
+
+For groups of related writes, prefer `ExecuteBatchAsync`:
+
+```csharp
+await Database.ExecuteBatchAsync("default", new[]
+{
+    new RogueDatabaseStatement("UPDATE player_stats SET kills = kills + 1 WHERE steam_id = @id",
+        new[] { new RogueDatabaseParameter("id", steamId) }),
+    new RogueDatabaseStatement("INSERT INTO audit_log (steam_id, action) VALUES (@id, @action)",
+        new[]
+        {
+            new RogueDatabaseParameter("id", steamId),
+            new RogueDatabaseParameter("action", "kill")
+        })
+}, transaction: true);
+```
+
+In 2.1.0, ADO/MySQL batches execute through **one worker hop per batch**, rather than one `Task.Run` per statement. SQLite continues using the framework-owned SQLite execution path.
+
+## HTTP performance behavior
+
+RogueRust HTTP is asynchronous from plugin callers, but the underlying .NET request API is blocking. In 2.1.0 RogueRust places a global `SemaphoreSlim` gate in front of execution so at most **8 active blocking HTTP attempts** consume worker threads at once.
+
+Per-host pacing, cancellation, retry policy and owner cleanup still apply. This protects the CLR ThreadPool if many plugins all make requests at the same time.
 
 ## Common SDK helpers
 
@@ -152,14 +275,6 @@ SaveData("MyPlugin/state", state);
 
 SetCache("result", expensiveResult, TimeSpan.FromMinutes(10));
 if (TryGetCache("result", out MyResult cached)) { }
-
-Delay(TimeSpan.FromSeconds(5), RunOnce, "run-once");
-Repeat(TimeSpan.FromMinutes(5), Maintenance, "maintenance");
-
-Throttle("scan", TimeSpan.FromMilliseconds(250), ScanNearbyEntities);
-Debounce("save", TimeSpan.FromSeconds(1), SaveState);
-CoalesceNextTick("ui-refresh", RefreshUi);
-RepeatUnique("maintenance", TimeSpan.FromSeconds(30), Maintenance);
 
 string grid = GridReference(player.transform.position);
 var nearby = NearbyPlayers(player.transform.position, 100f);
@@ -174,27 +289,29 @@ using (Measure("MyPlugin", "ExpensiveOperation"))
 
 The complete service surface is available through `RogueServices.Instance` or the protected `Rogue` property on `RogueRustPlugin`.
 
-`Kernel`, `Registry`, `Lifecycle`, `Modules`, `Capabilities`, `Dependencies`, `Compatibility`, `Permissions`, `Integrations`, `Players`, `Cooldowns`, `Data`, `Events`, `Configuration`, `Cache`, `Commands`, `Ui`, `Adapters`, `World`, `Entities`, `Terrain`, `Monuments`, `Topology`, `Spawns`, `Scheduler`, `Workloads`, `Http`, `Network`, `Discord`, `Logger`, `Profiler`, `RuntimeMetrics`, `CircuitBreakers`, `Database`, `Pools`, `Serialization`, `Utilities`, `PluginSdk`, `Security`, `Developer`, `BinarySerialization`, `Pathfinding`, `TerrainAnalysis`, `MapRendering`, `Images`, `Loot`, `EntitySerialization`, and `Fonts`.
+Major services include `Kernel`, `Registry`, `Lifecycle`, `Modules`, `Capabilities`, `Dependencies`, `Compatibility`, `Permissions`, `Integrations`, `Players`, `Cooldowns`, `Data`, `Events`, `Configuration`, `Cache`, `Commands`, `Ui`, `Adapters`, `World`, `Entities`, `Terrain`, `Monuments`, `Topology`, `Spawns`, `Scheduler`, `Workloads`, `Http`, `Network`, `Discord`, `Logger`, `Profiler`, `RuntimeMetrics`, `CircuitBreakers`, `Database`, `Pools`, `Serialization`, `Utilities`, `PluginSdk`, `Security`, `Developer`, `ImageLibrary`, `BinarySerialization`, `Pathfinding`, `TerrainAnalysis`, `MapRendering`, `Images`, `Loot`, `EntitySerialization` and `Fonts`.
 
-Use capability checks when a plugin can operate without an optional service:
+Feature-detect optional functionality where appropriate:
 
 ```csharp
 if (HasCapability("scheduler:cron"))
 {
-    // Enable cron-backed functionality.
+    // Enable cron-specific behavior.
 }
 ```
 
-## Compatibility hooks for normal `RustPlugin` plugins
+## Compatibility hooks for normal RustPlugin plugins
 
-A plugin does not have to inherit from `RogueRustPlugin`. Conventional Oxide/Carbon-compatible plugins can use `Interface.CallHook(...)`.
+A plugin does not have to inherit from `RogueRustPlugin`. Normal Oxide/Carbon-compatible plugins can call the narrower compatibility surface through `Interface.CallHook(...)`.
 
 ```csharp
 object version = Interface.CallHook("RogueRust_GetVersion");
 object supported = Interface.CallHook("RogueRust_HasCapability", "scheduler:cron");
 ```
 
-| Hook group | Available hooks |
+Public hook groups include:
+
+| Group | Hooks |
 | --- | --- |
 | Framework | `RogueRust_GetVersion`, `RogueRust_IsPluginLoaded`, `RogueRust_Call`, `RogueRust_IsCompatible` |
 | Capabilities/dependencies | `RogueRust_HasCapability`, `RogueRust_GetCapabilityProvider`, `RogueRust_AreDependenciesSatisfied` |
@@ -207,70 +324,95 @@ object supported = Interface.CallHook("RogueRust_HasCapability", "scheduler:cron
 | Diagnostics/security | `RogueRust_GetProfiledOperationCount`, `RogueRust_GetSlowOperationCount`, `RogueRust_IsCircuitAvailable`, `RogueRust_ResetCircuit`, `RogueRust_HasPermission` |
 | Database | `RogueRust_GetDatabaseConnectionCount`, `RogueRust_IsDatabaseRegistered` |
 
-The typed SDK is preferred because it provides compile-time types and richer services. Compatibility hooks are intentionally narrower.
-
-## Database strategy
-
-For a single server, use RogueRust's own local SQLite store. It is isolated from Oxide/Carbon internal databases and uses a game-server-oriented WAL configuration.
-
-Use MySQL/MariaDB when data must be shared by multiple Rust servers, a website, control panel or another external process. RogueRust owns the connection/provider abstraction so individual plugins do not need separate database plumbing.
+The typed SDK is preferred for RogueRust-aware plugins; compatibility hooks intentionally expose a smaller surface.
 
 ## Lifecycle ownership
 
-Where supported, RogueRust associates resources with the owning plugin. On unload/reload it removes or cancels owned event subscriptions, cache entries, commands, UI documents/callbacks, coordinated workloads, scheduled jobs, HTTP work and database registrations. Player UI state/callbacks are also cleaned on disconnect.
+Where supported, RogueRust associates resources with an owning plugin. On unload/reload it removes or cancels owned event subscriptions, cache entries, commands, UI state/callbacks, coordinated workloads, scheduled jobs, HTTP requests and database registrations. Player UI state/callbacks are also cleaned on disconnect.
 
-## 1.x → 1.8.0 evolution
+## Performance guidance for plugin authors
 
-The detailed history is in [`CHANGELOG.md`](CHANGELOG.md).
+- Do not run expensive scans in every hot Rust hook; throttle/coalesce them.
+- Do not rewrite unchanged UI every tick; use the RogueUI update helpers and stable element keys.
+- Use stable action callbacks for finite UI state transitions.
+- Batch DB writes when they belong to the same logical update.
+- Keep BasePlayer/BaseEntity/FileStorage/Texture2D/Unity interaction on the game thread unless a specific RogueRust API documents otherwise.
+- Reuse ImageLibrary CRCs; do not download images during every render.
+- Prefer native `ItemIcon` for item/skin previews where possible.
+- Use the shared HTTP service instead of giving every plugin an independent blocking network worker model.
 
-- **1.0.x** — initial RogueRust 1.x framework foundation.
-- **1.1.0** — shared pooling, serialization, utilities, typed data and Discord services.
-- **1.2.x** — world services, runtime metrics, internal transport, manifests/dependencies, integrity/security, pathfinding, map/image/loot/entity tooling and hardened release pipeline.
-- **1.3.0** — consolidated stable framework baseline after the 1.2 release-candidate series.
-- **1.4.0** — workload coordinator and performance SDK.
-- **1.5.0** — RogueUI performance work, secure callbacks, SQLite improvements and corrected MySQL/MariaDB provider discovery; Oxide-first architecture formalised.
-- **1.6.0** — richer RogueUI state/layout/control system and UI telemetry.
-- **1.7.x** — dirty-render experiments, Oxide CUI serialization corrections, dual-runtime command compatibility, client-safe reconciliation and stable server-side UI actions.
-- **1.8.0 Stable** — validated 1.7.5 core plus safe high-level windows, headers, close controls, notifications, confirmation dialogs, pagination and responsive layout helpers.
+## Samples package
+
+The public samples package contains:
+
+- `RogueRustExample` — broad SDK tour.
+- `RogueRustMariaDbExample` — optional MySQL/MariaDB registration and migrations.
+- `RogueDatabaseBatchExample` — 2.1 transaction/batch usage.
+- `RogueImageLibraryExample` — native FileStorage image caching; no SteamID required.
+- `RogueUiShowcase` — compact UI composition/callback example.
+- `RogueUiDashboard` — state, tabs, grid, toggles, input and progress.
+- `RogueUiDirtyDashboard` — UI reconciliation/navigation regression test.
+- basic, command, database and UI plugin templates.
+
+Download:
+`https://github.com/RogueAssassin/Oxide.Ext.RogueRust/releases/download/v2.1.0/Oxide.Ext.RogueRust-v2.1.0-samples.zip`
+
+The ZIP contains `SAMPLES_GUIDE.txt` with installation notes and a description of each example.
 
 ## Building the extension from source
 
-Requirements: Windows PowerShell 5.1+, a .NET SDK capable of building `net48`, current Rust/Oxide managed references in `References/`, and the bundled ConfuserEx tooling.
+Requirements:
+
+- Windows PowerShell 5.1+
+- .NET SDK capable of building `net48`
+- current Rust/Oxide managed references in `References/`
+- release protection tooling configured for protected public builds
+
+Refresh references from your own server installation before building:
 
 ```powershell
-.\build\Release.cmd -Version 1.8.0
+.\scripts\Update-References.ps1 -ManagedPath "C:\path\to\RustDedicated_Data\Managed" -Clean
 ```
 
-The pipeline validates tooling, synchronises version metadata, compiles `net48`, runs repository checks, validates templates/API surfaces, protects the DLL, generates the update manifest, packages release assets and writes SHA-256/build information.
+Build 2.1.0:
 
-## Repository structure
-
-```text
-.github/workflows/   CI and public publishing
-assets/              GitHub/public artwork
-build/               release and packaging scripts
-docs/                focused technical SDK/design documentation
-References/          compile-time Rust/Oxide/Unity assemblies
-samples/             example RogueRust plugins
-scripts/             validation/build helpers
-security/            signing instructions (private keys ignored)
-specs/               manifest/schema formats
-src/                 RogueRust extension source
-templates/           plugin templates
-tools/               RogueRust CLI and build tooling
+```powershell
+.\build\Release.cmd -Version 2.1.0
 ```
+
+The release pipeline now creates both the normal release ZIP and the separate samples ZIP, generates SHA-256 checksums, and the public publish workflow uploads both assets.
+
+## Documentation layout
+
+The public/source root is deliberately kept simple:
+
+- `README.md` — installation, usage, SDK introduction and support information.
+- `CHANGELOG.md` — full release history.
+- `FEATURES.md` — current capability catalogue.
+- `SAMPLES_GUIDE.txt` — plain-text guide included with sample packaging.
+
+Historical migration/fix markdown files have been consolidated into those three public Markdown documents.
 
 ## Support
 
-When reporting a problem, include the RogueRust version, runtime (Oxide or Carbon), Rust server build, relevant `roguerust.status`/diagnostic output, plugin name/version using RogueRust, and the complete exception or server-console message.
+When reporting a problem, provide:
 
-Plugin authors should feature-detect optional capabilities, keep stable UI element/action keys, use RogueRust-owned scheduling/workload helpers instead of duplicate timers where appropriate, and keep Unity/Rust object access on the normal game thread unless an API explicitly documents otherwise.
+- RogueRust version;
+- runtime: Oxide or Carbon;
+- Rust server build;
+- plugin name/version using RogueRust;
+- output from the relevant `roguerust.*` diagnostic command;
+- the complete exception/server-console message;
+- reproduction steps, especially for UI or lifecycle issues.
 
 ## Repositories
 
-- Public releases and updater: `https://github.com/RogueAssassin/Oxide.Ext.RogueRust`
-- Source/build repository: `https://github.com/RogueAssassin/Oxide.Ext.RogueRust-Source`
+Public releases/updater:
+`https://github.com/RogueAssassin/Oxide.Ext.RogueRust`
+
+Source/build repository:
+`https://github.com/RogueAssassin/Oxide.Ext.RogueRust-Source`
 
 ## License
 
-See [`LICENSE`](LICENSE).
+See `LICENSE`.

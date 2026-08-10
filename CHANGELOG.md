@@ -1,6 +1,45 @@
 # Changelog
 
-This changelog consolidates the RogueRust 1.x development line into one public history. Patch releases used to validate/correct the 1.7 UI transition are grouped under 1.7.x so the public history remains useful rather than repetitive.
+## 2.1.0 — Performance and public-release hardening
+
+- Promoted the 2.0.2 codebase to the 2.1.0 framework baseline without removing existing public ImageLibrary, UI, command, database, scheduler or compatibility APIs.
+- Changed native ImageLibrary lookups so a FileStorage CRC is validated once per runtime/community entity and subsequent reads are dictionary-only instead of reloading PNG bytes on every UI lookup.
+- Added validated-CRC invalidation when images are replaced/removed, metadata reloads, FileStorage entries become stale, or the Rust CommunityEntity changes.
+- Added 8 MiB remote source-size, 4096x4096 decoded-dimension and 3 MiB normalized-PNG safety limits to prevent image-cache memory spikes.
+- Cached successful Unity ImageConversion method discovery instead of repeating reflection lookup for every downloaded image.
+- Changed ImageLibrary metadata persistence to a true locked snapshot plus temporary-file/replace write strategy.
+- Coalesced normal ImageLibrary metadata mutations through a short delayed save instead of rewriting `images.json` after every downloaded image.
+- Kept image decoding/download processing sequential by default to avoid concurrent Texture2D/decode memory pressure on the game server.
+- Added a global HTTP execution gate limiting blocking HTTP attempts to eight concurrent workers while preserving cancellation, retries and per-host pacing.
+- Changed ADO/MySQL `ExecuteBatchAsync` to run the complete transaction/batch through one worker hop rather than one `Task.Run` per SQL statement.
+- Added `RogueImageLibraryExample` and `RogueDatabaseBatchExample` samples.
+- Added automated `Oxide.Ext.RogueRust-v2.1.0-samples.zip` generation/checksum and public GitHub release upload.
+- Consolidated public Markdown documentation to `README.md`, `CHANGELOG.md` and `FEATURES.md`; historical fix/migration Markdown files are folded into the current docs.
+- Updated public documentation with server-owner installation/support guidance, ImageLibrary SteamID clarification, current hooks/commands, performance guidance and links to the samples package.
+
+## 2.0.x — Native ImageLibrary 2.x baseline
+
+- Unified framework/runtime/assembly/updater/sample/template/workflow versioning on the 2.x line.
+- Added native `IRogueImageLibraryService` backed by Rust FileStorage for CUI image caching without requiring the standalone ImageLibrary plugin.
+- Added queued remote downloads, persistent URL/CRC metadata, CommunityEntity/wipe invalidation and stale-entry recovery.
+- Added RogueUI `ItemIcon(itemId, skinId)` support for native item/skin previews.
+- Added required UnityWebRequest/Rust.Data build-reference synchronization.
+- Removed the compile-time UnityEngine.ImageConversionModule dependency that conflicted with net48/netstandard reference versions.
+- Resolved Unity `ImageConversion.LoadImage` and `EncodeToPNG` dynamically from the running Rust server while retaining PNG validation.
+
+## 1.9.1 — Native images and configuration layout
+
+- Introduced the native RogueRust ImageLibrary service and image-related capabilities.
+- Moved RogueRust/plugin configuration toward the direct host config directory layout with migration from legacy nested layouts.
+- Added native Rust item/skin icon rendering support.
+
+## 1.9.0 — Native command lifecycle
+
+- Removed framework dependence on host `AddChatCommand`, `AddConsoleCommand`, `RemoveChatCommand` and `RemoveConsoleCommand` overloads.
+- Routed RogueRust chat/RCON command execution through native Rust hook paths and the Rogue command service.
+- Added `roguerust.exec <command> [args...]` as the local console/RCON RogueRust command gateway.
+- Kept unknown commands flowing to the normal Rust/Oxide/Carbon command pipeline.
+- Hardened world-size resolution for Carbon/Mono compatibility.
 
 ## 1.8.0 — Stable
 
