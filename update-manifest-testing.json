@@ -2,9 +2,9 @@
     "Product":  "RogueRust.ProtectedCore",
     "Version":  "3.2.0-testing",
     "Channel":  1,
-    "PublishedUtc":  "2026-09-15T10:34:03Z",
+    "PublishedUtc":  "2026-09-15T11:00:05Z",
     "DownloadUrl":  "https://github.com/RogueAssassin/Oxide.Ext.RogueRust/releases/download/v3.2.0-testing/Oxide.Ext.RogueRust.dll",
-    "Sha256":  "97dd99f7384cc3e75a091eb11efc977c43d730c7353801791f989573ea17dcc6",
+    "Sha256":  "228e71e0eee7de9cb642f5fc52d968f9662e24115cf247179dd6f6f063323b20",
     "Signature":  "",
     "KeyId":  "",
     "MinimumApiLevel":  8
