@@ -1,111 +1,105 @@
-<p align="center">
-  <img src="assets/roguerust-banner.png" alt="RogueRust - Oxide / CarbonMod Extension Framework DLL" width="100%">
-</p>
+# RogueRust 4.4.0
 
-# RogueRust — Oxide / CarbonMod Extension Framework DLL
+**Oxide-first / Carbon-compatible extension framework for Rust server plugins**
 
-**Current testing line: RogueRust 3.3.1**
+RogueRust is the shared runtime and SDK used by the RogueRust plugin family. Version 4.4.0 promotes the validated 4.3.x global asset, Workshop and skin-catalogue development line while retaining the RRAM administration/UI, GridPower and performance foundations of earlier 4.x releases.
 
-RogueRust is an Oxide-first, Carbon-compatible server-side framework DLL for Rust plugins. It centralises reusable UI, image/FileStorage, database, HTTP, scheduling, world, teleport, administration-state, resilience, profiling, security and developer services so compatible plugins do not each run competing infrastructure.
+> **Compatibility rule for v4:** existing source files and established plugin-facing functionality are retained. Optimisation work remains additive or compatibility-preserving unless an API is explicitly versioned and documented.
 
-> **Channel safety:** testing builds are published as `v3.3.1-testing` prereleases and use `update-manifest-testing.json`. Stable installations continue to use the stable `update-manifest.json` channel.
+## What RogueRust provides
 
-## Changelog at a glance
+RogueRust centralises work that otherwise gets duplicated across plugins: UI composition, secure callbacks, permissions/helpers, image/FileStorage handling, data and database access, HTTP, scheduling/workloads, pooling, world queries, administration helpers, profiling, resilience, integrations, update/compatibility diagnostics and shared GridPower/power-pole infrastructure.
 
-### 3.3.1-testing — current
-- Advances backend, assembly, runtime and plugin-manifest identity to 3.3.1.
-- Expands RogueUI administration tokens for overlay, navigation, inputs, dividers, status rails, cards, search, pagination and compact controls.
-- Standardizes a centered 960×640 dark F1/TeleportGUI-inspired administration workspace with restrained lime selection/accent states.
-- Adds bounded UI scaling and retains semantic Regular/Medium/Bold/Mono/Brand/Icon font roles.
-- Continues shared teleport execution/safe-destination/back-state through `IRogueTeleportService`.
-- Continues lightweight shared vanish state through `IRogueVanishService`, designed for event-driven AdminVanishUncharted/AdminMenu policy rather than global per-frame polling.
-- Continues ImageLibrary-v2 development toward bounded workers, priority requests, normalized-URL in-flight deduplication/fanout, retry/backoff, negative caching/cooldowns and richer queue/latency telemetry.
-- Targets RogueRustAdminMenu 1.3.x page/UI, teleport, vanish and Give/ImageLibrary testing.
+The extension remains **Oxide-first** and supports **Carbon through its Oxide compatibility surface** without introducing a hard Carbon dependency.
 
-### 3.3.0-testing
-- Began the coordinated administration-platform overhaul.
-- Added shared vanish-state service/bootstrap and administration capability discovery.
-- Added shared RogueUI design/font primitives for a consistent F1-style plugin family.
-- Continued moving AdminMenu teleport workflows onto the shared RogueRust teleport service.
+## What changed in 4.4.0
 
-### 3.2.x
-- Added shared safe teleport destination resolution, teleport result reporting, previous-location tracking and Back support.
-- Hardened protected CI and isolated testing releases from the stable updater pointer.
+RogueRust 4.4.0 consolidates the shared asset and skin infrastructure developed and live-tested through the 4.3.x line.
 
-### 3.1.x
-- Expanded plugin manifests, capability/dependency contracts, service discovery, world helpers, stability reporting and SDK/API validation.
+Key improvements include:
 
-### 3.0.0
-- Consolidated the mature 2.x platform into the stable public 3.x framework contract.
+- Added the global RogueRust asset store at `RogueRust/Assets/RogueAssets.db` with versioned SQLite migrations and reusable Workshop/item/collection/pack metadata.
+- Added `IRogueWorkshopService` for keyless known-ID Workshop metadata resolution, collection expansion, bounded batching, request deduplication and persistent cache reuse.
+- Workshop metadata can now publish resolved skins into the shared skin catalogue and provide preview URLs to RogueRust ImageLibrary without each plugin maintaining its own Steam request layer.
+- Added shared Steam skin-pack indexing from Rust `UnlockedViaSteamItem` relationships while keeping player entitlement and execution policy in consuming plugins.
+- Expanded `IRogueSkinCatalogService` with bounded catalogue search by name, Workshop ID and content ID plus shared building-skin metadata by building grade.
+- Improved skin application so held entities receive the applied skin and an immediate network refresh alongside the underlying item state.
+- Retained the separation between reusable DLL infrastructure and plugin-owned player commands, permissions, blacklists, targeting, UI and skin-application policy.
+- Removed an unnecessary compile-time Rust localization dependency from Workshop item-tag mapping so the protected release builds against the established Rust/Oxide reference surface.
+- Aligned project, assembly, runtime, CI and public-release identity to 4.4.0.
 
-## Main framework areas
+## Module history
 
-| Area | What RogueRust provides |
-| --- | --- |
-| **RogueUI** | CUI documents, callbacks, layouts, templates, pagination, modals, state, partial/unchanged-render handling, pressure metrics and shared 3.3 administration design tokens. |
-| **ImageLibrary** | URL/FileStorage cache, content dedupe, reverse index, owner namespaces, pressure telemetry, native item icons and optional Workshop preview resolution. |
-| **Administration** | Shared safe teleport/back state, shared vanish state and reusable AdminMenu-facing UI primitives. |
-| **World** | Players/entities, terrain, topology, grids, monuments, roads/rivers/rail, spatial queries and spawn/safe-position helpers. |
-| **Database** | SQLite plus optional MySQL/MariaDB-compatible providers, migrations, transactions, batching and bounded concurrency. |
-| **HTTP/networking** | JSON, retries, bounded responses, global/per-host concurrency, attribution and circuit breakers. |
-| **Scheduler/workloads** | Delay/repeat/cron, ownership, cancellation, retries, debounce, throttle, coalescing and unique-repeat helpers. |
-| **Runtime/observability** | Logging, profiling, recent metrics, owner pressure, soak/stability monitoring, pooling, cache and lifecycle ownership. |
-| **Developer SDK** | Plugin manifests, dependency validation, capability contracts, adapters, compatibility reporting, API baseline and service discovery. |
-| **Security/integrations** | Secure callbacks, integrity helpers, permission helpers, Discord webhooks/components and typed integrations. |
+| Module | Available from | Purpose |
+|---|---:|---|
+| Core / SDK | v1.x | Shared extension lifecycle, service access and plugin contracts |
+| Database & persistence | v1.x | SQLite/MySQL-compatible access, migrations and data helpers |
+| RogueUI | v1.7.0 | Shared UI documents, callbacks, layouts and reusable components |
+| Runtime / resilience | v2.x | Scheduling, workloads, backpressure, circuits and shutdown handling |
+| Profiling & diagnostics | v2.x | Runtime metrics, health, pressure and soak diagnostics |
+| World & administration | v3.x | World helpers, teleport/back, vanish and vehicle catalogues |
+| F1 administration UI | v3.3.x | Shared F1 workspace, catalogues and administration primitives |
+| Skin service | v3.3.11 | Shared skin catalogue, validation and effective-skin cache |
+| v4 performance baseline | v4.0.0 | Compatibility-first optimisation, tooling and release overhaul |
+| GridPower / power-pole backend | v4.3.1 | Shared safe public-grid power-pole discovery/state backend and diagnostics |
+| Global asset store / Workshop service | v4.4.0 | Shared persistent asset, Workshop collection, Steam pack and preview metadata infrastructure |
+| Building skin catalogue | v4.4.0 | Shared building-grade skin metadata for execution plugins |
 
-## RogueRustAdminMenu 1.3.x integration
+## Administrator console commands
 
-RogueRust 3.3.x is being developed alongside the AdminMenu 1.3.x overhaul. The target UI is a compact centered F1-style workspace covering Dashboard, Players, Teleport, Permissions, Groups, Convars, Plugins and Give pages using shared RogueUI design primitives rather than unrelated per-page themes.
+RogueRust exposes diagnostics through the server console. The current command families include:
 
-The DLL owns reusable bounded state/work: safe destination resolution, teleport execution/back state, shared vanish state and common UI/image infrastructure. The plugin remains responsible for permissions and Rust-specific gameplay policy.
+`roguerust.version`, `roguerust.status`, `roguerust.health`, `roguerust.resilience`, `roguerust.compatibility`, `roguerust.capabilities`, `roguerust.performance`, `roguerust.recent`, `roguerust.soak`, `roguerust.pressure`, `roguerust.world`, `roguerust.jobs`, `roguerust.network`, `roguerust.database`, `roguerust.services`, `roguerust.sdk`, `roguerust.security`, `roguerust.update` and `roguerust.commands`.
 
-AdminVanishUncharted integration is designed around event hooks for visibility and NPC targeting, with optional plugin policy such as god mode, flight/noclip, HUD state and metabolism/radiation cleanup. This avoids introducing a server-wide administration polling loop.
+Use `roguerust.commands` on a running server as the authoritative command overview for the installed build.
 
-## ImageLibrary and Steam
+## Windows development
 
-A player SteamID and Steam Web API key are **not required** by RogueRust's core image pipeline. Normal images are resolved from URLs and stored through Rust FileStorage. Native Rust item/skin rendering remains the preferred low-cost path where suitable; Workshop preview resolution is optional.
+The repository has one Windows entry point:
 
-The 3.3.1 ImageLibrary-v2 direction focuses on bounded concurrency and memory pressure: request deduplication/fanout, priority-aware work, retry/cooldown state and owner/queue/latency telemetry while keeping Unity texture work on the safe thread.
-
-## Installation
-
-Install `Oxide.Ext.RogueRust.dll` in the normal Oxide extension location used by your server and restart the server after replacing it. Carbon is supported through its Oxide-compatible runtime surface; RogueRust does not require a hard Carbon compile-time dependency.
-
-For development/testing use the `v3.3.1-testing` prerelease. Production servers should remain on the stable release/update channel until the testing line is promoted.
-
-## Diagnostics
-
-Useful validation commands include:
-
-```text
-roguerust.version
-roguerust.status
-roguerust.health
-roguerust.compatibility
-roguerust.capabilities
-roguerust.performance
-roguerust.recent
-roguerust.pressure
-roguerust.resilience
-roguerust.soak
-roguerust.world
-roguerust.jobs
-roguerust.network
-roguerust.database
-roguerust.services
-roguerust.sdk
-roguerust.security
-roguerust.update
+```bat
+RogueRust-Windows.cmd
 ```
 
-For 3.3.1 testing, exercise AdminMenu navigation, teleport destinations and Back behavior, vanish transitions/unload cleanup, Give/ImageLibrary previews and extension shutdown/restart. Include the relevant diagnostics output when reporting runtime or performance issues.
+It opens a menu for validation/build, pre-stable checks, template tests, protected builds, release packaging, reference updates and SDK-reference generation. It launches child PowerShell scripts with **process-scoped** `ExecutionPolicy Bypass`; it does not permanently change the user's or machine's PowerShell policy.
 
-## Performance model
+Non-interactive examples:
 
-RogueRust intentionally favors bounded/shared work over uncontrolled background activity: global/per-host HTTP limits, serialized SQLite, opt-in bounded remote DB concurrency, bounded queues/state, controlled Unity image processing, striped persistence locks, monotonic cooldown timing, unchanged-UI suppression, circuit breakers, bounded telemetry and event-driven administration state.
+```bat
+RogueRust-Windows.cmd -Action Validate
+RogueRust-Windows.cmd -Action PreStable
+RogueRust-Windows.cmd -Action Protected -Version 4.4.0
+RogueRust-Windows.cmd -Action Release -Version 4.4.0
+```
 
-## Release contents and compatibility
+The existing individual scripts remain available under `scripts/` and `build/`.
 
-Protected releases provide `Oxide.Ext.RogueRust.dll` plus generated release/package metadata, checksums and documentation/samples where applicable. Testing releases are prereleases and only update the testing manifest pointer.
+## Building
 
-The 3.3.1 line remains additive to the 3.x public contract wherever practical. Public API/capability validation is used to catch accidental removals before release; intentional breaking changes should be explicitly documented rather than introduced through incidental refactoring.
+RogueRust targets .NET Framework 4.8 and requires current Rust/Oxide reference assemblies in `References/`. Use the Windows launcher to update references and validate the repository before producing a release.
+
+The protected release pipeline remains the canonical packaging path. Do not publish a DLL that has not passed repository validation, compatibility/API checks and release verification.
+
+## Plugin and mod development
+
+Developer material is kept in the source repository so public releases can remain focused on server administrators.
+
+- `docs/` — SDK and implementation guides.
+- `samples/` — example consumers and integration patterns.
+- `templates/` — starting points for RogueRust-aware plugins.
+- `specs/` — compatibility and behavioural specifications.
+- `FEATURES.md` — detailed capability inventory.
+- `CHANGELOG.md` — version history and testing notes.
+
+When extending the framework, prefer shared services over duplicating expensive timers, world scans, network requests, persistence loops or UI infrastructure in individual plugins.
+
+## Release channels
+
+- **Stable:** `vX.X.X` and `update-manifest.json`.
+- **Testing:** `vX.X.X-testing` and `update-manifest-testing.json`.
+
+For this release line, testing builds resolve to **4.4.0-testing** and remain isolated on `update-manifest-testing.json`. Stable **4.4.0** is published from `main` through the protected release workflow and updates only `update-manifest.json`.
+
+## 4.4.0 release validation
+
+Validate clean Oxide startup, Carbon compatibility through the Oxide compatibility surface, RogueRust plugin-family loading, Workshop/cache persistence, skin catalogue/search, held-item visual refresh, building-skin catalogue consumers, GridPower, shutdown/restart behaviour, updater channel isolation and the protected CI artifact.
