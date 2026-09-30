@@ -1,96 +1,103 @@
-# RogueRust 2.1.0 Features
+# RogueRust 4.4.0 Features
 
-RogueRust is an Oxide-first extension framework for Rust with CarbonMod compatibility through the Oxide-compatible runtime surface. It is intended to be the shared infrastructure layer used by performance-conscious Rust plugins.
+RogueRust 4.4.0 is the stable global-asset, Workshop, skin-catalogue and shared-service evolution of the RogueRust 4.x framework for Oxide-first / Carbon-compatible Rust servers.
 
-## Core framework
+## 4.4.0 release baseline
 
-- Service registry, lifecycle ownership and capability discovery.
-- Plugin manifests, dependency checks and compatibility helpers.
-- Owner-scoped cleanup when plugins unload.
-- Shared logging, profiling, runtime metrics and circuit breakers.
-- Pooling, serialization, binary serialization and utility services.
+- Retains the v4 compatibility/performance baseline, RRAM administration framework and GridPower backend.
+- Adds a persistent global asset store and shared Workshop service so plugins can reuse metadata rather than duplicate Steam/cache infrastructure.
+- Adds shared Workshop collection and Steam skin-pack metadata while keeping player entitlement and execution policy plugin-owned.
+- Expands the shared skin catalogue with bounded search and building-grade skin metadata.
+- Improves held-item/entity skin refresh through the shared application service.
+- Keeps Oxide as the primary runtime and Carbon support through its Oxide compatibility surface without a hard Carbon dependency.
+- Maintains protected deterministic release packaging, API compatibility validation, SDK generation and isolated stable/testing update channels.
 
-## RogueUI
+## Global assets and Workshop
 
-- Rust/Oxide CUI document builder.
-- Stable player-bound server-side callbacks/actions.
-- Per-player transient UI state.
-- Unchanged-document suppression to avoid duplicate AddUI traffic.
-- Conservative safe leaf replacement and atomic structural rebuilds.
-- Panels, surfaces, labels, buttons, images, item icons, progress bars, badges, toggles, tabs and text input.
-- Windows/headers, top-right close controls, notifications/toasts, confirmation modals and pagination.
-- Responsive/grid/vertical/horizontal layout helpers.
-- UI render, callback, payload and reconciliation telemetry.
+- Persistent global asset database at `RogueRust/Assets/RogueAssets.db` with versioned SQLite migrations.
+- Shared asset, Workshop item, collection and Steam skin-pack records through `IRogueAssetStoreService`.
+- Keyless known-ID Workshop metadata and collection resolution through `IRogueWorkshopService`.
+- Seven-day Workshop metadata freshness by default, bounded batches and in-flight request deduplication.
+- Persistent Workshop metadata reuse and ImageLibrary preview URL integration.
+- Steam pack membership indexing from Rust `UnlockedViaSteamItem` relationships.
+- Discovery/catalogue metadata is shared; ownership, permissions and gameplay policy remain plugin-owned.
 
-## Native ImageLibrary
+## Skin platform
 
-- Built-in remote image URL registration and download queue.
-- Rust FileStorage-backed PNG CRC cache; no standalone ImageLibrary plugin is required.
-- No player SteamID or Steam Web API key is required by the core image cache.
-- Optional `imageId` value is a cache variant/skin/workshop identifier, not player identity.
-- Lazy FileStorage validation: an image is validated once per runtime/community entity, then normal reads are dictionary-only.
-- Stale FileStorage entries self-heal and are queued for re-download when a source URL is known.
-- 8 MiB source-download limit, 4096x4096 decoded-dimension limit and 3 MiB normalized-PNG limit.
-- Cached Unity ImageConversion method discovery.
-- Debounced, snapshot-safe and atomic metadata persistence.
-- Native RogueUI `ItemIcon(itemId, skinId)` support for cheap Rust-resolved item/skin previews.
+- Shared immutable-snapshot skin catalogue with generation tracking.
+- Validated skin application service for safe in-place skins.
+- Generation-aware per-player effective-skin cache for permission/ownership filtering.
+- Lightweight per-player browser sessions with bounded 48-slot paging and cleanup primitives.
+- Runtime imported skin registration/removal with owner/source metadata for Workshop and custom-skin workflows.
+- Bounded catalogue search by name, Workshop ID and content ID.
+- Shared building-skin catalogue by Rust building grade.
+- Held-entity skin/network refresh when safe in-place item skins are applied.
+- Redirect skins remain explicitly guarded until state-preserving replacement is implemented and server-tested.
 
-## Commands
+## Framework and SDK
+- Strongly typed services plus conventional `RogueRust_*` hook bridges.
+- Plugin manifests, dependency validation, versioned capability contracts and generated SDK validation.
+- Shared teleport, vanish and vehicle-catalogue contracts for administration plugins.
+- Shared GridPower service for safe public power-pole discovery, state management and plugin consumption.
 
-- `[RogueCommand]` metadata with aliases, descriptions, usage, permissions and cooldowns.
-- Argument binding and validation helpers.
-- Native Rust hook dispatch rather than hard binding to host `AddChatCommand`/`AddConsoleCommand` overloads.
-- Chat command interception through Rust hooks and RCON/server execution through the Rogue command gateway.
-- `roguerust.exec <command> [args...]` for local console/RCON execution.
+## RogueUI F1 administration
+- Document-based UI composition with stable callback tokens and selective updates.
+- Full-screen 16:9 F1 workspace geometry with bounded proportional scaling.
+- Compact top navigation/category rails and reusable search/grid/tile/table/action/status models.
+- Charcoal/slate surfaces, muted olive selection and restrained orange interaction accents.
+- Semantic Regular, Medium, Bold, Mono, Brand and Icons font roles.
+- Bounded catalogue filtering for item/vehicle browsers.
+- Standard item actions: 1, 100, 1000 and native stack.
+- No F1-layer polling, timers or per-frame work.
 
-## Data and databases
+## Vehicle catalogue
+- Exact Rust-native item/prefab metadata on vehicle descriptors (`ItemShortname`, `ItemId`, `Prefab`).
+- Separate 2/3/4-module car and chassis entries, solo/duo submarines and motorbike-with-sidecar.
+- `IRogueVehicleService` and `RogueVehicleService` shared catalogue.
+- Animals, Bikes, Boats, Cars, Helicopters, Misc, Siege and Trains categories.
+- Stable IDs, display names, image keys and search text.
+- Bounded category/search filtering.
+- Spawn/entity creation intentionally remains outside the catalogue until safe spawn resolution is finalized.
 
-- Typed configuration and data-file helpers.
-- Shared TTL cache.
-- Rogue-owned SQLite support for local persistence.
-- Optional MySQL/MariaDB provider for shared/multi-server data.
-- Schema migrations and parameterized commands.
-- Transaction-backed `ExecuteBatchAsync`.
-- In 2.1.0, ADO batches use one worker hop per batch instead of one ThreadPool hop per statement.
+## Image/Asset Pipeline
+- Binary `.png` assembly resources remain the canonical packaged-artwork format.
+- Embedded PNGs are signature/dimension/chunk-CRC/IEND validated and stored directly, preserving the exact packaged artwork.
+- New embedded FileStorage writes are immediately read back and verified before plugins receive the CRC.
+- Unity ImageConversion remains available only for non-PNG normalization.
+- Embedded assets are content-fingerprinted and stale FileStorage records are automatically refreshed when packaged artwork changes.
+- Dedicated assembly-embedded `Icons/` asset catalogue for RogueRust plugin branding.
+- No runtime HTTP, GitHub or SteamID dependency is required for embedded artwork.
+- URL download and Rust FileStorage persistence with SHA-256 content deduplication and shared CRC reuse.
+- Five-minute failed-request cooldown suppresses repeated broken URL downloads.
 
-## Performance coordination
+## Teleport and vanish administration
+- Safe-position options and destination resolution for position/grid/monument workflows.
+- Previous-location tracking and Back support.
+- Explicit teleport success/failure results.
+- Lightweight owner-scoped shared vanish state with capability discovery.
+- Rust-specific vanish networking/NPC/gameplay policy remains plugin-owned and event-driven.
 
-- Throttle repeated hot-hook work.
-- Debounce rapid saves/refreshes.
-- Coalesce duplicate next-tick work.
-- Unique repeating jobs so multiple code paths do not create duplicate timers.
-- Runtime profiler and slow-operation counters.
-- Bounded HTTP execution in 2.1.0: at most eight blocking HTTP attempts execute concurrently across the framework.
+## Database / HTTP / runtime
+- SQLite and MySQL/MariaDB-compatible providers, migrations, transactions, batches and bounded concurrency.
+- Bounded HTTP responses/concurrency, retries, attribution and circuit breakers.
+- Scheduler/workload helpers, cooldowns, pooling, events, logging, profiling and soak monitoring.
+- Atomic/debounced data and configuration persistence.
 
-## Scheduling
+## World / resilience / security
+- Terrain, topology, grid, monuments, roads, rivers, rail, entity/spatial and spawn helpers.
+- Resource-pressure attribution, bounded stability history and drain-first shutdown.
+- Secure UI callbacks, integrity/security diagnostics and permission helpers.
+- Discord webhook and typed integration adapter surfaces.
 
-- Delayed and repeating jobs.
-- Absolute/cron scheduling where supported.
-- Owner-scoped cancellation and unload cleanup.
-- Scheduler diagnostics.
+## v4.0.0 -> v4.4.0 hardening
+- Carries forward reduced allocation pressure in scheduler, workload, network, HTTP, database and RogueUI diagnostic/lifecycle paths.
+- Retains cached stable world/reflection and database-provider metadata while continuing to read live server/entity state.
+- Preserves bounded HTTP/database concurrency, retry, circuit-breaker and drain-first shutdown behaviour.
+- Extends the shared server-service model with the GridPower power-pole backend and the 4.4.0 global asset/Workshop infrastructure.
+- Removes the experimental substation/splitter services from the release line after testing showed the power-pole-only model to be the safer completed scope.
+- Keeps unified Windows clean/build/validate/pre-stable/template/protected/package/reference/SDK tooling behind `RogueRust-Windows.cmd`.
+- CI validates version identity and packages protected artifacts; public publication remains explicitly controlled.
+- Existing public API contracts remain guarded by the source API baseline.
 
-## HTTP, messaging and integrations
-
-- Async HTTP requests with retry policies, cancellation and per-host pacing.
-- Global bounded execution to prevent plugin request bursts from saturating the CLR ThreadPool.
-- Discord webhook support.
-- Internal transport/message services.
-- Adapter registry and optional economy integrations.
-
-## World and gameplay helpers
-
-- Player lookup and nearby-player queries.
-- Map grid conversion.
-- Terrain, topology, monument and spawn services.
-- Entity queries/snapshots/serialization.
-- Pathfinding and terrain analysis.
-- Map rendering, image cache, loot selection and font metadata utilities.
-
-## Security and release system
-
-- Artifact integrity service.
-- Protected release pipeline.
-- Release manifests and SHA-256 checksums.
-- Update manifest generation and update checks.
-- GitHub workflow support for protected public releases.
-- Separate downloadable Samples package generated for each 2.1.x release.
+## Release channels
+Stable 4.4.0 uses `update-manifest.json`. Testing 4.4.0 builds use `update-manifest-testing.json`; testing publication never overwrites the stable updater pointer. Public stable publication is produced only from a protected release artifact.
