@@ -1,3 +1,11 @@
+## 4.4.58 — Unit tests, image index saves and release hardening
+
+- **Tests:** a unit-test project (`tests/`) covers version comparison, cron parsing, the scheduler (including a repeating job surviving a failure), the cache, cooldowns, circuit breakers, pathfinding, PNG validation, the topology masks and the update-manifest signing format. CI runs it before every build.
+- **Performance:** the ImageLibrary index is serialized once, without an intermediate copy, and the debounced save writes the file on a worker thread. The index is flushed at shutdown.
+- **Fix:** logging a scheduled-job failure can no longer affect the job itself.
+- **Publishing:** re-running the pipeline for a version that is already public keeps that version's binaries and updater pointer and only refreshes notes and the changelog. The update manifest is written without a byte-order mark.
+- **Docs:** the README and feature list describe the current release flow.
+
 ## 4.4.57 — Signed updates, single version source, fixes and performance
 
 - **Updater:** the release public key is now built into the DLL and a valid manifest signature is required before an update is installed. Unsigned or wrongly signed releases are refused.
