@@ -1,3 +1,21 @@
+## 4.4.60 — Stability release (testing)
+
+- **Plugin unload:** each cleanup step (events, network, image callbacks, cache, commands, UI, workloads, scheduler, HTTP, database) is isolated, so a failure in one can no longer leave an unloaded plugin's timers, requests or UI alive in the others.
+- **HTTP:** a POST or PATCH is no longer replayed after a timeout or 5xx unless the caller supplies a retry policy, because the server may already have acted on it (for example a webhook message sent twice). 429 responses still retry for every method. A date-form `Retry-After` is capped at five minutes like the seconds form.
+- **Database (MySQL and custom providers):** argument errors, a missing provider and unregistered connections are not retried and do not count against the circuit breaker.
+- **Events:** removed a race where a subscription added while its event group was being emptied could be lost.
+- **Updater:** the "check in progress" flag is always cleared, so one failed check cannot disable later ones.
+- **Caches:** expired entries in the image byte cache are swept with the main cache.
+- **SDK:** `SaveDataInBackground(key, value)` on `RogueRustPlugin` snapshots on the game thread and writes on a worker thread, for periodic and dirty-flag saves.
+- **Tests:** 68 unit tests, adding events, the in-process network bus and HTTP retry decisions.
+
+## 4.4.59 — Shared scheduler timer, indexed entity queries, sliced pathfinding (testing)
+
+- **Scheduler:** every job is now driven by one shared timer and a due-time heap instead of one system timer per job. Cancelling or rescheduling no longer allocates or disposes timers. Behaviour is unchanged; ordering, cancellation, repeat counts, rescheduling and 2,000 concurrent jobs are covered by tests.
+- **World:** `World.FindNearby(position, radius, typeName, maxResults)` (and `RogueWorldService.FindEntitiesIndexed`) query Rust's own server entity grid, so the cost follows the entities near the position rather than the size of the world. It falls back to the full scan if the grid is unavailable or the candidate buffer overflows. `FindEntities` is unchanged.
+- **Pathfinding:** `Pathfinding.FindPathSliced(start, goal, completed, options, nodesPerTick)` runs the same search a slice per tick and reports the result through a callback. `FindPath` is unchanged and now shares the same resumable search.
+- **Source:** the minified service files (GridPower, circuit breakers, network, vehicles, compatibility, advanced services, image library) were re-laid out one statement per line by a syntax-preserving tool; their token streams are identical before and after.
+
 ## 4.4.58 — Unit tests, image index saves and release hardening
 
 - **Tests:** a unit-test project (`tests/`) covers version comparison, cron parsing, the scheduler (including a repeating job surviving a failure), the cache, cooldowns, circuit breakers, pathfinding, PNG validation, the topology masks and the update-manifest signing format. CI runs it before every build.
