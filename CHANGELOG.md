@@ -1,3 +1,13 @@
+## 4.4.62 — Plugin config and data attributes, DeathNotes names, HeliCrash icon
+
+- **Fix (config and data files):** `[JsonProperty]` and `[JsonIgnore]` on plugin classes are now honoured by `LoadConfiguration`/`SaveConfiguration` and `LoadData`/`SaveData`. Oxide compiles plugins against its own merged copy of Json.NET, so the extension never saw those attributes: files were written with member names, a setting typed under its documented name (for example `"Disable Vanilla Spawns": true` in RogueRustEventDirector) was silently discarded on the next load, and ignored members were written out. Existing files still load, because a renamed member also accepts its old member-name key; they are rewritten with the declared names on the next save. Once rewritten, a file is not readable by 4.4.60 or earlier.
+- **Config files:** saved lists now replace a class's built-in defaults instead of being appended to them.
+- **Icons:** `Icons/RogueRustHeliCrash.png` is embedded for the RogueRustHeliCrash on-screen alert.
+- **Dictionaries:** added `DeathNotesNames` (display names for the killers and victims the original Death Notes shipped with: animals, NPCs, traps, turrets, vehicles), `DeathNotesWeaponNames` and `DeathNotesAttachments`.
+- **Dictionaries:** `DeathNotesWeapons` gains about 85 prefab aliases: held tools and guns, RPG, MLRS, mortar, cannon and siege projectiles, molotov, bee and flashbang grenades, modular cars, bikes and snowmobiles.
+- **Tests:** every embedded dictionary is loaded and checked, and the attribute handling is covered. 82 unit tests.
+- Paired plugin updates (separate files): RogueRustDeathNotes 2.5.3, RogueRustEventDirector 1.3.2, RogueRustHeliLeashControl 2.1.3, RogueRustServerInfo 1.1.1, RogueRustFurnaceSplitter 2.1.3, RogueRustHackableCrateTracker 2.1.1, and the new RogueRustHeliCrash 1.0.0. 4.4.61 was a test build and was not released.
+
 ## 4.4.60 — Stability release
 
 - **Plugin unload:** each cleanup step (events, network, image callbacks, cache, commands, UI, workloads, scheduler, HTTP, database) is isolated, so a failure in one can no longer leave an unloaded plugin's timers, requests or UI alive in the others.
