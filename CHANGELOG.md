@@ -1,3 +1,8 @@
+## 4.4.64 — Unreadable config files are kept
+
+- **Config files:** when a config loaded through `LoadConfiguration` cannot be read (for example after a typo), the file is copied to `<name>.json.invalid` before the defaults are written. Previously the defaults replaced it and every setting was lost.
+- Paired plugin updates (separate files): every plugin that reads its own config now does the same. RogueRustRemovalTool 2.0.3, RogueRustAdminMenu 2.5.4, RogueRustSkins 2.3.3, RogueRustBuildingManager 1.2.0 and RogueRustEventDirector 1.4.1 also carry fixes from a line-by-line review.
+
 ## 4.4.63 — Building service
 
 - **New service `Rogue.Buildings`** (`IRogueBuildingService`): finds the building a player means (the block they are looking at, otherwise their tool cupboard's), checks cupboard authorisation, collects a building's blocks, works out what a grade change costs using the game's own prices, takes that cost all-or-nothing and reports what is missing, gives refunds, and applies grade, skin and colour changes through the game's own call. Plugins queue the per-block work with `Workloads.Batch`.
