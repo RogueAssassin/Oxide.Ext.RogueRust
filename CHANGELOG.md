@@ -1,3 +1,10 @@
+## 4.4.63 — Building service
+
+- **New service `Rogue.Buildings`** (`IRogueBuildingService`): finds the building a player means (the block they are looking at, otherwise their tool cupboard's), checks cupboard authorisation, collects a building's blocks, works out what a grade change costs using the game's own prices, takes that cost all-or-nothing and reports what is missing, gives refunds, and applies grade, skin and colour changes through the game's own call. Plugins queue the per-block work with `Workloads.Batch`.
+- **`RogueBuildingGrades`:** grade numbers, display names, parsing of names such as `stone`, `hqm` and `armored`, and cost rounding.
+- **Tests:** 105 unit tests, adding grade parsing, stepping and cost rounding.
+- Paired plugin updates (separate files): the new RogueRustBuildingManager 1.0.0, RogueRustSkins 2.3.2 (hands structure skinning to it) and RogueRustServerInfo 1.1.2.
+
 ## 4.4.62 — Plugin config and data attributes, DeathNotes names, HeliCrash icon
 
 - **Fix (config and data files):** `[JsonProperty]` and `[JsonIgnore]` on plugin classes are now honoured by `LoadConfiguration`/`SaveConfiguration` and `LoadData`/`SaveData`. Oxide compiles plugins against its own merged copy of Json.NET, so the extension never saw those attributes: files were written with member names, a setting typed under its documented name (for example `"Disable Vanilla Spawns": true` in RogueRustEventDirector) was silently discarded on the next load, and ignored members were written out. Existing files still load, because a renamed member also accepts its old member-name key; they are rewritten with the declared names on the next save. Once rewritten, a file is not readable by 4.4.60 or earlier.
