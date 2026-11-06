@@ -1,3 +1,16 @@
+## 4.4.66 — Rebuilt for the November 2026 Rust update
+
+- Rebuilt for the November 2026 Rust update; FileStorage.Store signature change.
+- **Fix (images):** the update replaced `FileStorage.Store(data, type, entity, numID)`, `Get(crc, type, entity, numID)` and `Remove(crc, type, entity)` with slot-addressed calls `(entity, part, ...)`, so every embedded or downloaded image failed with `Method not found` (for example RogueRustHeliCrash `OnServerInitialized`). ImageLibrary now stores each PNG with `StoreByCrc` (slot = CommunityEntity + CRC) and reads and removes it from that slot. Image IDs are still the CRC, so `images.json` is unchanged; images saved under the old layout are detected as missing and stored again on first use.
+- **Dictionaries:** `DeathNotesNames` adds `Bird Flock` and `Seagull Group` → `Seagulls`, the two animal types added in this update.
+- **Tests:** `GameReferenceTests` resolves every game method and field the extension's IL uses against `References/`, so the next signature change fails the tests instead of the server. 110 unit tests.
+- Paired plugin updates (separate files): RogueRustHeliCrash 1.0.4, RogueRustDeathNotes 2.5.4, RogueRustAdminMenu 2.5.5 and RogueRustBlueprintManager 2.1.3.
+
+## 4.4.65 — Halloween DeathNotes names
+
+- **Dictionaries:** `DeathNotesNames` adds `Frankenstein Pet` (the Halloween pet built at a Frankenstein table), `Bandit Guard`, and `Crabs` → `Crab`, so the game's crab class name no longer shows as "Crabs".
+- Paired plugin update (separate file): RogueRustDeathNotes 2.5.4 recognises the Frankenstein pet as a killer and victim, with `{owner}`, and stops reporting crabs, jellyfish, bandit guards and other unlisted animals and human NPCs as unknown.
+
 ## 4.4.64 — Unreadable config files are kept
 
 - **Config files:** when a config loaded through `LoadConfiguration` cannot be read (for example after a typo), the file is copied to `<name>.json.invalid` before the defaults are written. Previously the defaults replaced it and every setting was lost.
