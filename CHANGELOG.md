@@ -1,3 +1,8 @@
+## 4.4.68 — RogueRustSkins SQLite cache opens again
+
+- **Fix (skins):** the RogueRustSkins SQLite cache (`RogueRustSkins/SkinServiceCache.db`) was opened while the service kernel was still being built, before the database service had started. Every boot failed with `The RogueRust database service is not running`, so cached skins were never loaded from it. 4.4.67 was the first build to log this; before that it failed silently. The skin catalogue now takes part in the service lifecycle: it opens the cache after the database service starts, rebuilds with the cached skins, and closes the connection on shutdown.
+- Paired plugin updates (separate files): every plugin moves up one patch version. Each plugin's internal version (written to its config as `Version (DO NOT CHANGE)`) now matches its published version; the previous releases still wrote the version before it. RogueRustGridPower 2.0.5 and RogueRustRemovalTool 2.0.5 also log their real version at startup (2.0.4 reported 2.0.3).
+
 ## 4.4.67 — Embedded icons load again; failures are logged
 
 - Built against the 10 November 2026 Rust build and Oxide.Rust 2.0.7900 (the latest release). This build changes no game APIs or Oxide hooks; every game member the extension uses still resolves.
