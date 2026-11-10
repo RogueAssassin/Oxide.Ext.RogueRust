@@ -1,3 +1,15 @@
+## 4.4.67 — Embedded icons load again; failures are logged
+
+- Built against the 10 November 2026 Rust build and Oxide.Rust 2.0.7900 (the latest release). This build changes no game APIs or Oxide hooks; every game member the extension uses still resolves.
+- **Fix (images):** an embedded icon could fail to load with `FileStorage cache contains a null file`. When FileStorage reads back a slot whose row holds no data, it caches the empty entry, and the next read of that slot fails the game's assertion. ImageLibrary checks the same CRC twice while registering an embedded image, so the second check failed. On 4.4.66 the RogueRustDeathNotes NativeGUI icon and the RogueRustHeliCrash alert icon were affected. ImageLibrary now clears such a slot and stores the image again.
+- **Logging:** failures that were previously discarded are now written to the Oxide log:
+  - the RogueRustSkins SQLite cache failing to load or save (previously sent to `System.Diagnostics.Trace`, which Oxide does not show);
+  - a queued command's completion callback throwing;
+  - the scheduler failing to dispatch a due job;
+  - stability sampling failing (logged once);
+  - the asset store failing to flush on unload.
+- Paired plugin updates (separate files): every plugin moves up one patch version after compiling cleanly against this build. RogueRustAdminMenu 2.5.6 and RogueRustEventDirector 1.4.2 compile without warnings; RogueRustRandoSpawns 2.1.4 takes its cache version from one constant.
+
 ## 4.4.66 — Rebuilt for the November 2026 Rust update
 
 - Rebuilt for the November 2026 Rust update; FileStorage.Store signature change.
