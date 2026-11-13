@@ -1,73 +1,72 @@
-# RogueRust ProtectedCore automatic updates
+# RogueRust automatic updates
 
-## Manifest URL
+RogueRust can update itself from this repository's releases. It is on by default.
 
-RogueRust should use the permanent public manifest pointer:
+## How it works
+
+1. When the extension starts, and then every `checkIntervalMinutes`, RogueRust reads `RogueRust.manifest.json` from the latest release:
+   `https://github.com/RogueAssassin/Oxide.Ext.RogueRust/releases/latest/download/RogueRust.manifest.json`
+2. If the manifest's version is newer than the installed one, it checks the manifest's RSA-SHA256 signature against the public key built into the DLL. If the signature doesn't verify, it doesn't install the update, and it logs an error.
+3. It downloads `Oxide.Ext.RogueRust.dll` from the same release and checks that its size and SHA-256 match the manifest.
+4. It renames the installed DLL to `Oxide.Ext.RogueRust.dll.backup` and writes the new one in its place. If any of that fails, the backup is moved back.
+5. It logs `[RogueRust] Version X installed. Restart the server to load it.`
+
+The running server keeps using the version it started with. The update takes effect on the **next restart**.
+
+Pre-release and testing builds are never offered. GitHub's "latest release" is always the newest stable release.
+
+## Settings
+
+Settings are in `RogueRust.Update.json` in the Oxide or Carbon config folder (`oxide/config/` or `carbon/configs/`). The file is created with these defaults the first time the extension loads:
+
+```json
+{
+  "enabled": true,
+  "automaticDownload": true,
+  "checkIntervalMinutes": 60,
+  "repository": "RogueAssassin/Oxide.Ext.RogueRust",
+  "manifestAsset": "RogueRust.manifest.json",
+  "requireSignedManifest": false,
+  "manifestPublicKeyXml": ""
+}
+```
+
+| Setting | Effect |
+|---|---|
+| `enabled` | `false` turns update checks off completely. |
+| `automaticDownload` | `false` only logs that a new version is available; nothing is downloaded. |
+| `checkIntervalMinutes` | How often to check after startup. The minimum is 15. |
+| `repository`, `manifestAsset` | Where updates come from. Leave these as they are. |
+| `requireSignedManifest`, `manifestPublicKeyXml` | Release builds always require a signed manifest, checked against the key built into the DLL, so these don't need changing. |
+
+Changes to the file take effect the next time the extension loads.
+
+## Checking manually
+
+Run this in the server console:
 
 ```text
-ROGUERUST_UPDATE_MANIFEST_URL=https://raw.githubusercontent.com/RogueAssassin/Oxide.Ext.RogueRust/main/update-manifest.json
+roguerust.update
 ```
 
-This URL is maintained automatically by the private source repository after every successful protected build and public publish. Unlike GitHub's `/releases/latest/` URL, it can point to RC/prerelease builds as well as stable releases.
+It needs server administrator access (auth level 2) when run by a player; the server console and RCON always have it. The result appears in the server log.
 
-Automatic updates are enabled whenever that URL exists, unless explicitly disabled with:
+## What a release contains
 
-```text
-ROGUERUST_AUTO_UPDATE=false
+| File | Purpose |
+|---|---|
+| `Oxide.Ext.RogueRust.dll` | The extension |
+| `RogueRust.manifest.json` | Version, download URL, size, SHA-256 and signature that the updater reads |
+| `SHA256SUMS.txt` | Checksum for checking a manual download |
+
+To check a manual download on Windows:
+
+```powershell
+Get-FileHash .\Oxide.Ext.RogueRust.dll -Algorithm SHA256
 ```
 
-Recommended settings:
+The hash should match the line in `SHA256SUMS.txt`.
 
-```text
-ROGUERUST_AUTO_UPDATE=true
-ROGUERUST_UPDATE_MANIFEST_URL=https://raw.githubusercontent.com/RogueAssassin/Oxide.Ext.RogueRust/main/update-manifest.json
-ROGUERUST_UPDATE_INITIAL_DELAY_MINUTES=2
-ROGUERUST_UPDATE_INTERVAL_MINUTES=60
-```
+## Rolling back
 
-These variables must be present in the environment of the process that starts `RustDedicated.exe`. Setting them after the server is already running will not affect the running process.
-
-## Windows launch script
-
-Set the values before starting RustDedicated:
-
-```bat
-@echo off
-set "ROGUERUST_UPDATE_MANIFEST_URL=https://raw.githubusercontent.com/RogueAssassin/Oxide.Ext.RogueRust/main/update-manifest.json"
-set "ROGUERUST_AUTO_UPDATE=true"
-set "ROGUERUST_UPDATE_INITIAL_DELAY_MINUTES=2"
-set "ROGUERUST_UPDATE_INTERVAL_MINUTES=60"
-
-RustDedicated.exe -batchmode +server.identity "server1"
-```
-
-When RogueRust Manager starts the server, add these values to the manager's server-process environment or to the wrapper batch file that the manager launches.
-
-## Publishing a release
-
-The private source repository is the only release authority:
-
-```text
-RogueAssassin/Oxide.Ext.RogueRust-Source
-    -> protected build
-    -> validation
-    -> public release assets
-    -> update-manifest.json on public main
-    -> RogueAssassin/Oxide.Ext.RogueRust
-```
-
-The public repository does not rebuild the DLL. It hosts the already-built protected DLL, ZIP, manifests, checksums, and release metadata.
-
-Each public release contains:
-
-- `Oxide.Ext.RogueRust.dll`
-- `RogueRust.manifest.json`
-- `update-manifest.json`
-- `SHA256SUMS.txt`
-- `release-info.json`
-- release ZIP and ZIP checksum
-- `BUILD_REPORT.txt`
-
-## Update behaviour
-
-RogueRust checks the permanent manifest pointer after the configured initial delay and at the configured interval. When a newer compatible version is found, the DLL is downloaded, SHA-256 verified, backed up, and staged as a pending update. The running extension is not hot-swapped; the staged update is applied during the server update/restart workflow.
+Stop the server, delete `Oxide.Ext.RogueRust.dll` and rename `Oxide.Ext.RogueRust.dll.backup` back to `Oxide.Ext.RogueRust.dll`. Set `"enabled": false` in `RogueRust.Update.json` first if you don't want it updated again straight away. Then start the server.
