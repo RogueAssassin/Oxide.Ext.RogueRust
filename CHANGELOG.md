@@ -1,3 +1,17 @@
+## 4.4.69 — Faster database writes, sturdier images and workshop, config saves only on change
+
+- **Config (plugins):** `RogueRustPlugin.SaveConfigIfChanged(config, serializedConfig, version)` writes a plugin's config only when its content changes, ignoring formatting and number spelling. When the stored `Version (DO NOT CHANGE)` differs, the previous file is first kept as `<Name>.json.v<old version>.bak`. `KeepPreviousConfiguration` does the same for configs kept by the RogueRust configuration service, and that service no longer rewrites a file whose text is unchanged. Every plugin now uses these, so a normal restart writes no config files.
+- **Database:** the SQLite connection reuses prepared statements (up to 64 per connection, reset between uses) instead of preparing every statement again. The RogueRustSkins cache rewrite of 6,698 skins took 97.8 ms with 4.4.68 and 39.6 ms now (median of 7 runs on the server's own `sqlite3.dll`).
+- **Skins:** the catalogue keeps a fingerprint of what it last saved, so a restart with an unchanged catalogue skips the manifest and SQLite rewrite entirely. The manifest is written on a background thread. A cache write still queued at shutdown is now finished (up to 5 s) before the connection closes; previously it could be dropped.
+- **Workshop:** item lookups no longer call `ItemManager` from the thread-pool threads the Steam requests continue on. Items are mapped through tables built on the main thread at startup.
+- **Images:**
+  - when the server's CommunityEntity gets a new network ID, stored images are moved to it with `FileStorage.Reassign` instead of being downloaded and stored again;
+  - transient download failures (connection errors, timeouts, HTTP 408/429/5xx) are retried after 2, 8 and 30 seconds before the image is failed;
+  - a request for an image still on its failure cooldown now gets its callback (with no image) instead of never hearing back, and callers waiting on a download that `Clear` abandoned are answered the same way;
+  - a `Clear` during the last frame of a download now also stops that image from being stored.
+- **Tests:** 121 unit tests, adding statement-reuse correctness and benchmark tests (they run when the server's `sqlite3.dll` is present) and config-comparison tests.
+- Paired plugin updates (separate files): every plugin moves up one patch version and saves its config only when it changes, keeping the previous file on a version change. They require 4.4.69.
+
 ## 4.4.68 — RogueRustSkins SQLite cache opens again
 
 - **Fix (skins):** the RogueRustSkins SQLite cache (`RogueRustSkins/SkinServiceCache.db`) was opened while the service kernel was still being built, before the database service had started. Every boot failed with `The RogueRust database service is not running`, so cached skins were never loaded from it. 4.4.67 was the first build to log this; before that it failed silently. The skin catalogue now takes part in the service lifecycle: it opens the cache after the database service starts, rebuilds with the cached skins, and closes the connection on shutdown.
