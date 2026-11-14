@@ -1,6 +1,6 @@
-# RogueRust 4.4.77
+# RogueRust 4.4.78
 
-**Shared extension for Rust servers running Oxide or Carbon** · created by RogueAssassin
+**Shared extension for Rust servers running Oxide or Carbon, on Windows or Linux** · created by RogueAssassin
 
 RogueRust is the extension DLL that the [RogueRust plugins](https://github.com/RogueAssassin/RogueRust-Plugins) are built on. It gives them one shared set of services: UI, images, SQLite storage, Workshop and skin data, HTTP, scheduling, permissions and diagnostics. Each plugin then doesn't run its own copy of the same timers, downloads and database work.
 
@@ -12,12 +12,18 @@ Plugin catalogue and documentation: **[plugins.roguegaming.com.au](https://plugi
 2. Put it in the extensions folder:
    - **Oxide:** `RustDedicated_Data/Managed/`
    - **Carbon:** `carbon/extensions/`
+   The same DLL and folders are used on Windows and Linux.
 3. Restart the server. Extensions only load at startup.
-4. Install the plugins you want from the [plugin repository](https://github.com/RogueAssassin/RogueRust-Plugins). The current plugins need **RogueRust 4.4.75 or newer**; 4.4.77 is recommended.
+4. Install the plugins you want from the [plugin repository](https://github.com/RogueAssassin/RogueRust-Plugins). The current plugins need **RogueRust 4.4.75 or newer**; 4.4.78 is recommended.
 
 To check the download, each release includes `SHA256SUMS.txt` and a signed `RogueRust.manifest.json`.
 
-## What's new in 4.4.77
+## What's new in 4.4.78
+
+- **Windows and Linux.** RogueRust is tested on both on every build. The update signature check now uses the cross-platform .NET API, so automatic updates work the same on either system. See [Windows and Linux](#windows-and-linux).
+- **No false growth warnings after a restart.** `roguerust.performance` used to compare against the sample taken when RogueRust loaded, before Rust had loaded the map, so every restart reported thread and memory "growth" (for example 76 to 152 threads). Growth is now measured from 10 minutes after the server finishes loading. A real leak is still reported.
+
+## 4.4.77
 
 - **No more stall every 5 minutes.** 4.4.76 counted the server's threads by listing every thread on the machine. On a busy host that took over 100 ms, on the main thread, each time the stability sample ran. RogueRust now counts only its own process's threads, in about 1 ms.
 - **Paired plugin:** CustomPlayerMessages 3.1.9. The first join after a load no longer takes about 23 ms; Oxide's chat formatter is now set up while the plugin loads instead of during the join.
@@ -75,6 +81,17 @@ Measured on the SQLite engine Rust ships with (`sqlite3.dll` from the dedicated 
 - **Images:** a download that fails for a temporary reason (connection error, timeout, rate limit, server error) is retried after 2, 8 and 30 seconds. When the server entity that owns the image store changes, stored images are moved to the new owner, so the image IDs plugins hold stay valid. A plugin waiting on an image always gets an answer, even when the image is in its failure cooldown or the cache is cleared.
 
 The full history is in [CHANGELOG.md](CHANGELOG.md).
+
+## Windows and Linux
+
+RogueRust runs on Windows and Linux Rust servers, under Oxide or Carbon.
+
+- **One DLL for both.** `Oxide.Ext.RogueRust.dll` is .NET code that the server's Mono runtime runs on either system, so there is no separate Linux download. It goes in the same folder on both.
+- **The plugins are the same `.cs` files on both;** Oxide and Carbon compile them on the server.
+- **OS features adapt at runtime.** Process memory and thread counts come from Windows' own counters or from `/proc/self/status` on Linux. SQLite loads the server's own `sqlite3` library on each system.
+- **Automatic updates** download the same signed DLL and verify it the same way on both systems.
+- **Every build runs the test suite on Windows and Linux** before it can be published.
+- **Moving a server from Windows to Linux:** copy the `oxide` (or `carbon`) folder, including `data`, `config` and `lang`, then install the DLL. Linux file names are case-sensitive, so keep folder names such as `RogueRust` exactly as they are. After the first start, run `roguerust.database` and `roguerust.performance` to confirm SQLite loads and the process numbers are real values rather than `unavailable`.
 
 ## Automatic updates
 

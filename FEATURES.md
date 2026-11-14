@@ -1,4 +1,4 @@
-# RogueRust 4.4.77 features
+# RogueRust 4.4.78 features
 
 RogueRust is a shared extension: on its own it adds console diagnostics and automatic updates, but no gameplay. The features below are services that RogueRust plugins use, so each plugin doesn't carry its own copy. For what each plugin does in game, see the [plugin catalogue](https://plugins.roguegaming.com.au).
 
@@ -51,6 +51,12 @@ It runs on Oxide and on Carbon, through Carbon's Oxide compatibility. It doesn't
 - Plugins declare a default level for each permission. The first time a plugin loads, player permissions go to Oxide's `default` group and admin permissions to the `admin` group (4.4.75).
 - Each permission is granted once and recorded in `oxide/data/RogueRust/permission_defaults.json`, so a permission you revoke stays revoked. Set `Auto Grant Default Permissions` to `false` there to turn it off.
 - Opt-outs and rule bypasses are never granted automatically.
+
+## Windows and Linux
+
+- One `Oxide.Ext.RogueRust.dll` runs on Windows and Linux servers, under Oxide or Carbon (4.4.78).
+- OS-specific features (process metrics, SQLite) pick the right implementation at runtime.
+- Update signatures are verified the same way on both systems, and every build is tested on both.
 
 ## Running safely
 
