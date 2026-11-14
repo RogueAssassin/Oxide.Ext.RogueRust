@@ -1,3 +1,13 @@
+## 4.4.76 — Real process numbers in the performance report
+
+- **`roguerust.performance` and `roguerust.soak`:** working set, private memory and thread count now show real values. On the Rust server's Mono runtime, .NET's `Process` returns 0 for all three, so RogueRust reads them from the operating system: Windows memory counters and its thread list, or `/proc/self/status` on Linux. A value that still cannot be read shows as `unavailable` instead of `0.0 MiB`.
+- **Uptime and durations** show whole seconds (`0:24:02`, or `2d 03:04:05`) instead of `00:24:02.9024148`.
+- **Soak GC line:** shows one collection count when gen0, gen1 and gen2 are equal, as `roguerust.performance` has since 4.4.73, because Unity's collector is not generational.
+- **Slow scheduler runs:** when the scheduler has slow runs, the report names the scheduled job with the slowest run, with its owner and run counts.
+- **Thread warning:** Rust itself runs well over 100 threads, so the fixed 100-thread warning would have fired on every server now that the count is real. It now warns only when the count rises by 50 or more across at least 30 minutes of samples.
+- **Paired plugins:** CustomPlayerMessages 3.1.8 (the first join after a load no longer takes about 20 ms), AdminMenu 2.5.15 (vanish audit and help text say "vanish" instead of the old module name).
+- **Tests:** 148 (OS process values, `/proc/self/status` parsing, `unavailable` display, duration format).
+
 ## 4.4.75 — Default permissions by level
 
 - **Permission levels:** `[RoguePermission]` takes a default level: `[RoguePermission(Default = RoguePermissionLevel.Player)]` or `RoguePermissionLevel.Admin`. Without one it stays `None`, which registers the permission and grants it to nobody, as before.
