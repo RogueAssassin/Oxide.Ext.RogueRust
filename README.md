@@ -1,4 +1,4 @@
-# RogueRust 4.4.71
+# RogueRust 4.4.74
 
 **Shared extension for Rust servers running Oxide or Carbon** · created by RogueAssassin
 
@@ -13,11 +13,25 @@ Plugin catalogue and documentation: **[plugins.roguegaming.com.au](https://plugi
    - **Oxide:** `RustDedicated_Data/Managed/`
    - **Carbon:** `carbon/extensions/`
 3. Restart the server. Extensions only load at startup.
-4. Install the plugins you want from the [plugin repository](https://github.com/RogueAssassin/RogueRust-Plugins). The current plugins need **RogueRust 4.4.69 or newer**; with **4.4.71 or newer** their config files are updated in place and no `.bak` copies are made.
+4. Install the plugins you want from the [plugin repository](https://github.com/RogueAssassin/RogueRust-Plugins). The current plugins need **RogueRust 4.4.69 or newer**; with **4.4.71 or newer** their config files are updated in place and no `.bak` copies are made. **4.4.74 is recommended.**
 
 To check the download, each release includes `SHA256SUMS.txt` and a signed `RogueRust.manifest.json`.
 
-## What's new in 4.4.71
+## What's new in 4.4.74
+
+- **Fewer disk flushes.** A data save is skipped when the file already holds exactly that content. Plugins save their data every time they unload, and most of those saves change nothing, but each one used to write the file and flush it to disk on the main thread (FurnaceSplitter's unload took about 300 ms). A file you edit or replace yourself is still overwritten as before.
+- **Smaller UI pages.** New UI elements leave out zero offsets, as Oxide's own CUI helper does. That saves about 36 bytes per element, around 13% of a full AdminMenu item page. Opening a panel no longer serializes every element a second time.
+- **Cheaper spawn and kill hooks.** The event type of each entity class is worked out once and cached, instead of six type tests for every entity spawned or killed on the server.
+- **GridPower streetlight cache follows the map.** The cache is tied to the map seed (or the custom map), not only its size, so a wipe to a new seed at the same size rebuilds it. The first start on 4.4.74 rebuilds the cache once.
+- **Paired plugins:** AdminMenu 2.5.13 rebuilds vanish on Rust's own admin invisibility. It adds a dashboard toggle and persistence through reconnects and restarts, and blocks turrets from targeting vanished admins. GridPower 2.0.9 and RemovalTool 2.0.7 are also updated.
+
+## 4.4.73 and 4.4.72
+
+- **`roguerust.performance` and `roguerust.status` show their full report**, and also write it to `RustDedicated.log`. Rust's console only kept the last line a command replied with. Process metrics are read separately, and the memory warning appears only on real growth (512 MiB or more over at least 30 minutes).
+- **Lighter on the main thread:** hot paths skip constant and control-flow obfuscation, GridPower stops rescanning maps with no access points, and world searches and the skin catalogue do less work per entity.
+- **Paired plugins:** Skins 2.3.9 (browser box security fix and retargeting), DeathNotes 2.5.9, FurnaceSplitter 2.1.9, FuelStackOptimizer 2.1.7, ServerRestarter 2.1.7.
+
+## 4.4.71
 
 - **Plugin configs are updated in place.** When a plugin updates, the settings already in your config file keep their values and only the settings new in that release are added. No `<plugin>.json.v<old version>.bak` copy is made any more. The server log lists the settings that were added, and a warning names any existing setting the plugin had to correct, such as an out-of-range value.
 - **Lists in your config stay as you wrote them.** The paired plugin releases read lists from the file instead of merging them with the defaults, so entries are no longer duplicated, re-sorted or put back after you remove them.
