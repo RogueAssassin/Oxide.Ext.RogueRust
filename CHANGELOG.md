@@ -1,3 +1,10 @@
+## 4.4.78 — Windows and Linux
+
+- **Tested on Windows and Linux.** CI now runs the unit tests on Ubuntu as well as Windows, and a release is only published when both pass. The same `Oxide.Ext.RogueRust.dll` runs on both systems.
+- **Portable update signature check.** The updater verified the release manifest with `RSACryptoServiceProvider`, which modern .NET supports only on Windows; the first Linux test run caught it. It now uses `RSA.Create` with the same PKCS#1 v1.5 SHA-256 format the release is signed with. Checked against the real signed 4.4.77 manifest.
+- **No false growth warnings after a restart.** The memory and thread growth warnings compared against the sample taken when RogueRust loaded, before Rust had loaded the map, so a normal start reported growth (76 to 152 threads, about 1.4 GiB of heap). They now compare against the first sample taken 10 minutes after `OnServerInitialized`.
+- **Tests:** 154.
+
 ## 4.4.77 — Thread count without the main-thread hitch
 
 - **Stability samples no longer stall the server.** 4.4.76 counted threads with a Windows snapshot of every thread on the machine. On a host running thousands of threads that took over 100 ms, and the stability sample runs on the main thread every 5 minutes (the first sample after start took 127 ms). RogueRust now walks only its own process's threads, which takes about 1 ms. Memory counters were already cheap and are unchanged.
