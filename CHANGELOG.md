@@ -1,3 +1,10 @@
+## 4.4.73 — Accurate performance report
+
+- **`roguerust.performance`:** working set, private memory and thread count are read separately, so one value the Rust server's runtime cannot provide no longer zeroes the others. The GC line shows a single collection count, because Unity's collector is not generational (gen0, gen1 and gen2 were always equal).
+- **Memory warning:** managed memory is the whole server's heap, which is normally well over 1 GiB, so a fixed 512 MiB threshold warned on every server. The warning now appears only when managed memory grows by 512 MiB or more across at least 30 minutes of samples.
+- **Reports in the server log:** `roguerust.performance` and `roguerust.status` also write their report to the server log (`RustDedicated.log`). Rust does not log console replies, and some RCON tools cut long ones short.
+- **Paired plugins:** Skins 2.3.9 (security fix for the browser box, retargeting and refresh), DeathNotes 2.5.9 (keeps its own copy of hit data), FurnaceSplitter 2.1.9 (move hook only while an oven is looted).
+
 ## 4.4.72 — Lighter on the main thread
 
 - **Console:** `roguerust.performance`, `roguerust.status` and the other multi-line `roguerust.*` commands now show their full report. Rust's console keeps only the last reply a command sets, so only the final line used to appear. Plugin commands run from the console through RogueRust keep every reply line too.
