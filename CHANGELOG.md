@@ -1,3 +1,9 @@
+## 4.4.77 — Thread count without the main-thread hitch
+
+- **Stability samples no longer stall the server.** 4.4.76 counted threads with a Windows snapshot of every thread on the machine. On a host running thousands of threads that took over 100 ms, and the stability sample runs on the main thread every 5 minutes (the first sample after start took 127 ms). RogueRust now walks only its own process's threads, which takes about 1 ms. Memory counters were already cheap and are unchanged.
+- **Paired plugin:** CustomPlayerMessages 3.1.9. The first join after a load still took about 23 ms in 3.1.8. The cost was Oxide's chat formatter, which `Server.Broadcast` runs on every message and which builds its tables the first time it is used. The plugin now runs the formatter once while it loads.
+- **Tests:** 150 (thread count matches the OS, a read costs under 10 ms).
+
 ## 4.4.76 — Real process numbers in the performance report
 
 - **`roguerust.performance` and `roguerust.soak`:** working set, private memory and thread count now show real values. On the Rust server's Mono runtime, .NET's `Process` returns 0 for all three, so RogueRust reads them from the operating system: Windows memory counters and its thread list, or `/proc/self/status` on Linux. A value that still cannot be read shows as `unavailable` instead of `0.0 MiB`.
