@@ -1,3 +1,14 @@
+## 4.4.71 — Configs updated in place, no .bak files
+
+- **Config (plugins):** `SaveConfigIfChanged` no longer copies the old file to `<Name>.json.v<old version>.bak`. The config is updated in place: settings already in the file keep their values and settings new in the release are added. On a version change the log lists the settings that were added (`Configuration updated from X to Y; your settings were kept, 2 new settings added: …`), and a warning lists any existing setting the plugin changed or removed, for example a value corrected because it was out of range.
+- `KeepPreviousConfiguration` no longer writes a backup and is marked obsolete; it is kept so plugins built against 4.4.69 and 4.4.70 still load.
+- Existing `.bak` files are left where they are; delete them from `oxide/config` once you no longer need them.
+- The change report matches keys without regard to case, as the config loader does, and is worked out before the file is written. "Your settings were kept" appears only when no existing setting changed.
+- **Config service:** `RogueConfigurationService.Save` replaces the file without a backup name, so it no longer creates, and then deletes, a `<file>.bak` next to it. An owner's own `.bak` file with that name is no longer removed.
+- **Paired plugins:** every plugin that read its config with `JObject.ToObject` now uses the plugin's `Config.Settings` (`ObjectCreationHandling.Replace`), so lists in the file replace the defaults instead of being appended to them. AdminMenu 2.5.12 removes the duplicates earlier versions added.
+- **Paired plugin fixes:** ServerInfo 1.1.7 adds only the default commands new since your config's version, so a default entry you deleted stays deleted. ServerRestarter 2.1.6 keeps your restart time and warning lists as written, and an old-format config keeps its game tip delay. FuelStackOptimizer 2.1.6 keeps its lists as written; blanks and repeats are skipped when they are read.
+- **Tests:** 129 (config change report, including key case, null values, arrays and the shortened list).
+
 ## 4.4.70 — Faster GridPower reloads
 
 - **GridPower:** the native access-point index walks the server's entity list instead of searching every Unity object (`FindObjectsByType`), Measured on the test server (93k entities): both find the same 773 access points, in 3.5 ms instead of 225 ms. `ConfigureNativeGrid` reuses an index less than 30 seconds old instead of forcing a rescan, so a GridPower reload no longer rebuilds it twice (once to restore vanilla on unload, once to apply on load). On the test server, unloading GridPower took 352 ms.
