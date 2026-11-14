@@ -1,6 +1,6 @@
-# RogueRust 4.4.69
+# RogueRust 4.4.71
 
-**Shared extension for Rust servers running Oxide or Carbon**
+**Shared extension for Rust servers running Oxide or Carbon** · created by RogueAssassin
 
 RogueRust is the extension DLL that the [RogueRust plugins](https://github.com/RogueAssassin/RogueRust-Plugins) are built on. It gives them one shared set of services: UI, images, SQLite storage, Workshop and skin data, HTTP, scheduling, permissions and diagnostics. Each plugin then doesn't run its own copy of the same timers, downloads and database work.
 
@@ -13,9 +13,17 @@ Plugin catalogue and documentation: **[plugins.roguegaming.com.au](https://plugi
    - **Oxide:** `RustDedicated_Data/Managed/`
    - **Carbon:** `carbon/extensions/`
 3. Restart the server. Extensions only load at startup.
-4. Install the plugins you want from the [plugin repository](https://github.com/RogueAssassin/RogueRust-Plugins). The current plugins need **RogueRust 4.4.69 or newer**.
+4. Install the plugins you want from the [plugin repository](https://github.com/RogueAssassin/RogueRust-Plugins). The current plugins need **RogueRust 4.4.69 or newer**; with **4.4.71 or newer** their config files are updated in place and no `.bak` copies are made.
 
 To check the download, each release includes `SHA256SUMS.txt` and a signed `RogueRust.manifest.json`.
+
+## What's new in 4.4.71
+
+- **Plugin configs are updated in place.** When a plugin updates, the settings already in your config file keep their values and only the settings new in that release are added. No `<plugin>.json.v<old version>.bak` copy is made any more. The server log lists the settings that were added, and a warning names any existing setting the plugin had to correct, such as an out-of-range value.
+- **Lists in your config stay as you wrote them.** The paired plugin releases read lists from the file instead of merging them with the defaults, so entries are no longer duplicated, re-sorted or put back after you remove them.
+- Existing `.bak` files from 4.4.69 and 4.4.70 are left where they are; delete them from `oxide/config` once you no longer need them.
+
+4.4.70 made GridPower reloads faster: finding the power access points on a large map dropped from about 225 ms to under 4 ms.
 
 ## What changed from 4.4.68 to 4.4.69
 
@@ -29,7 +37,7 @@ Measured on the SQLite engine Rust ships with (`sqlite3.dll` from the dedicated 
 
 - **Database:** each SQL statement is prepared once per connection and reused, instead of being prepared again for every row.
 - **Skins:** when the skin catalogue hasn't changed since the last boot, it is no longer written back to disk and the database on restart.
-- **Plugin configs:** RogueRust plugins now rewrite their config file only when something in it changed. Before 4.4.69, 16 config files were rewritten on every restart. When a plugin updates to a new version, its old config is kept beside the new one as `<plugin>.json.v<old version>.bak`.
+- **Plugin configs:** RogueRust plugins now rewrite their config file only when something in it changed. Before 4.4.69, 16 config files were rewritten on every restart. (4.4.69 and 4.4.70 also kept the old config as `<plugin>.json.v<old version>.bak` on a version change; 4.4.71 stops doing that.)
 - **Workshop:** item lookups for Workshop skins no longer run on a background thread, where Rust's item manager isn't safe to use.
 - **Images:** a download that fails for a temporary reason (connection error, timeout, rate limit, server error) is retried after 2, 8 and 30 seconds. When the server entity that owns the image store changes, stored images are moved to the new owner, so the image IDs plugins hold stay valid. A plugin waiting on an image always gets an answer, even when the image is in its failure cooldown or the cache is cleared.
 
