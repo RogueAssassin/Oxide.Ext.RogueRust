@@ -1,3 +1,9 @@
+## 4.4.70 — Faster GridPower reloads
+
+- **GridPower:** the native access-point index walks the server's entity list instead of searching every Unity object (`FindObjectsByType`), Measured on the test server (93k entities): both find the same 773 access points, in 3.5 ms instead of 225 ms. `ConfigureNativeGrid` reuses an index less than 30 seconds old instead of forcing a rescan, so a GridPower reload no longer rebuilds it twice (once to restore vanilla on unload, once to apply on load). On the test server, unloading GridPower took 352 ms.
+- **Tooling:** `Test-Plugins.ps1` / menu P compile-checks plugins against the server's own references (from 4.4.69's tooling commit).
+- **Paired plugin:** RogueRustAdminMenu 2.5.11 writes only pending data on unload.
+
 ## 4.4.69 — Faster database writes, sturdier images and workshop, config saves only on change
 
 - **Config (plugins):** `RogueRustPlugin.SaveConfigIfChanged(config, serializedConfig, version)` writes a plugin's config only when its content changes, ignoring formatting and number spelling. When the stored `Version (DO NOT CHANGE)` differs, the previous file is first kept as `<Name>.json.v<old version>.bak`. `KeepPreviousConfiguration` does the same for configs kept by the RogueRust configuration service, and that service no longer rewrites a file whose text is unchanged. Every plugin now uses these, so a normal restart writes no config files.
