@@ -1,4 +1,4 @@
-# RogueRust 4.4.75
+# RogueRust 4.4.76
 
 **Shared extension for Rust servers running Oxide or Carbon** · created by RogueAssassin
 
@@ -13,11 +13,18 @@ Plugin catalogue and documentation: **[plugins.roguegaming.com.au](https://plugi
    - **Oxide:** `RustDedicated_Data/Managed/`
    - **Carbon:** `carbon/extensions/`
 3. Restart the server. Extensions only load at startup.
-4. Install the plugins you want from the [plugin repository](https://github.com/RogueAssassin/RogueRust-Plugins). The current plugins need **RogueRust 4.4.75 or newer**.
+4. Install the plugins you want from the [plugin repository](https://github.com/RogueAssassin/RogueRust-Plugins). The current plugins need **RogueRust 4.4.75 or newer**; 4.4.76 is recommended.
 
 To check the download, each release includes `SHA256SUMS.txt` and a signed `RogueRust.manifest.json`.
 
-## What's new in 4.4.75
+## What's new in 4.4.76
+
+- **Real process numbers in `roguerust.performance` and `roguerust.soak`.** Working set, private memory and thread count used to show 0, because Rust's Mono runtime doesn't report them through .NET. RogueRust now reads them from the operating system (Windows memory counters and thread list, or `/proc/self/status` on Linux). A value that still can't be read shows as `unavailable`.
+- **Easier-to-read reports.** Uptime and durations show whole seconds (`0:24:02`, or `2d 03:04:05`). The soak report shows one GC count, as the performance report already does. When the scheduler has slow runs, the report names the slowest scheduled job and the plugin that owns it.
+- **Thread warning on growth only.** Rust itself runs well over 100 threads, so the warning now appears only when the thread count rises by 50 or more over at least 30 minutes.
+- **Paired plugins:** CustomPlayerMessages 3.1.8 (the first join after a load no longer takes about 20 ms) and AdminMenu 2.5.15 (vanish messages say "vanish" instead of an old module name).
+
+## 4.4.75
 
 - **Default permissions by level.** The first time a plugin loads, its player permissions are granted to Oxide's `default` group (every player) and its admin permissions to the `admin` group. Players get the everyday features: Furnace Splitter, normal removal, basic skinning, Building Manager skins and wallpaper, crate reports and death notices. Administrative permissions go to admins only.
 - **Granted once, never again.** Each permission is recorded in `oxide/data/RogueRust/permission_defaults.json` after it is handled. Revoke one and it stays revoked, and a permission you had already granted to a group is left as you set it. Opt-outs and rule bypasses, such as free upgrades, the removal override and hiding from join messages, are never granted automatically.
@@ -86,7 +93,8 @@ All commands are run from the server console (RCON or the server window).
 | `roguerust.version` | Installed version |
 | `roguerust.status` | Overall status of the extension and its services |
 | `roguerust.health` | Operation, slow-operation and failure counts, plus the state of each network circuit |
-| `roguerust.performance` | Scheduler, memory, UI and image-library load, broken down by plugin |
+| `roguerust.performance` | Scheduler, memory, threads, UI and image-library load, broken down by plugin |
+| `roguerust.soak` | Memory, process and queue peaks across the sampled history |
 | `roguerust.database` | Database connections, queued work, failures and timings |
 | `roguerust.update` | Checks for an update now (server administrators only) |
 | `roguerust.commands` | Every command in the installed build |

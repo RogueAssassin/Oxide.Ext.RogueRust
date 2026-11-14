@@ -1,4 +1,4 @@
-# RogueRust 4.4.69 features
+# RogueRust 4.4.76 features
 
 RogueRust is a shared extension: on its own it adds console diagnostics and automatic updates, but no gameplay. The features below are services that RogueRust plugins use, so each plugin doesn't carry its own copy. For what each plugin does in game, see the [plugin catalogue](https://plugins.roguegaming.com.au).
 
@@ -10,7 +10,8 @@ It runs on Oxide and on Carbon, through Carbon's Oxide compatibility. It doesn't
 - Prepared statements are cached per connection and reused, so repeated writes don't re-parse the same SQL (new in 4.4.69).
 - Database work is queued and limited per connection. `roguerust.database` shows active and queued work, failures and timings.
 - Plugin data and config files are written atomically: a crash mid-write can't leave half a file. Frequent saves can be grouped into one write, or done off the main thread.
-- RogueRust plugins rewrite their config only when it changed, and keep the previous file as `<plugin>.json.v<old version>.bak` when the plugin version changes (new in 4.4.69).
+- RogueRust plugins rewrite their config only when it changed. When a plugin updates, your existing settings keep their values and only new settings are added; no `.bak` copy is made (4.4.71).
+- A data save is skipped when the file already holds exactly that content, so unchanged data isn't rewritten and flushed to disk on every unload (4.4.74).
 
 ## Images
 
@@ -36,14 +37,20 @@ It runs on Oxide and on Carbon, through Carbon's Oxide compatibility. It doesn't
 
 - Shared UI building blocks for plugin menus: layouts, tables, tiles, search and paging.
 - Each menu button runs through a random token that belongs to one player and expires, so other players can't trigger it by typing the console command.
-- Only the changed parts of a menu are re-sent.
+- Only the changed parts of a menu are re-sent, and new elements leave out zero offsets to keep pages small (4.4.74).
 
 ## Server and world helpers
 
 - Grid, monument, road, river, rail and terrain lookups, and spatial entity queries.
 - Teleport destinations, with a safe-position check and a previous-location record for "back".
 - Vehicle catalogue (cars, boats, helicopters, trains, animals and more) for admin menus.
-- Power-pole discovery and state for GridPower.
+- Power-pole discovery and state for GridPower. The streetlight cache is tied to the map seed, so a wipe to a new seed rebuilds it (4.4.74).
+
+## Permissions
+
+- Plugins declare a default level for each permission. The first time a plugin loads, player permissions go to Oxide's `default` group and admin permissions to the `admin` group (4.4.75).
+- Each permission is granted once and recorded in `oxide/data/RogueRust/permission_defaults.json`, so a permission you revoke stays revoked. Set `Auto Grant Default Permissions` to `false` there to turn it off.
+- Opt-outs and rule bypasses are never granted automatically.
 
 ## Running safely
 
@@ -56,4 +63,5 @@ It runs on Oxide and on Carbon, through Carbon's Oxide compatibility. It doesn't
 ## Updates and diagnostics
 
 - Signed automatic updates from this repository's releases; see [AUTO-UPDATE.md](AUTO-UPDATE.md).
-- Console diagnostics: `roguerust.version`, `status`, `health`, `performance`, `database`, `update`; `roguerust.commands` lists the rest.
+- Console diagnostics: `roguerust.version`, `status`, `health`, `performance`, `soak`, `database`, `update`; `roguerust.commands` lists the rest. `performance` and `status` also write their full report to `RustDedicated.log` (4.4.73).
+- Process working set, private memory and thread count are read from the operating system, because Rust's Mono runtime reports them as 0; a value that can't be read shows as `unavailable` (4.4.76).
