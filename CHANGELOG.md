@@ -1,3 +1,12 @@
+## 4.4.74 — Fewer disk flushes and smaller UI payloads
+
+- **Data saves:** a save is skipped when the file already holds exactly that content. Plugins save their data on every unload and most of those saves change nothing, but each one still wrote the file and flushed it to disk on the main thread (FurnaceSplitter's unload took about 300 ms). A file edited or replaced outside RogueRust is still overwritten as before; the check compares a content hash and the file's last-write time.
+- **UI:** newly created elements leave out zero offsets, as Oxide's own CUI helper does, which saves about 36 bytes per element (around 13% of a full AdminMenu item page). Updates still send every field. Opening or redrawing a panel no longer serializes every element a second time to fingerprint it; the fingerprints are hashed from the document JSON that was already built.
+- **World events:** the spawn and kill hooks look up each entity class's event type once and cache it, instead of running six type tests for every entity spawned or killed on the server.
+- **GridPower:** the streetlight cache is tied to the map seed (or the custom map), not only its size. A wipe to a new seed at the same size now rebuilds the cache instead of reusing the previous map's streetlight positions. The first start on 4.4.74 rebuilds the cache once.
+- **Paired plugins:** AdminMenu 2.5.13 (vanish rebuilt on Rust's native admin invisibility, with a dashboard toggle, persistence, lock access and turret protection; a favourite toggle updates only its star), GridPower 2.0.9 (ladder input hook only while a ladder is held), RemovalTool 2.0.7 (top-down bulk removal, one summary log line per bulk job).
+- **Tests:** 138 (data-save skipping, streetlight cache token, UI payload and fingerprints).
+
 ## 4.4.73 — Accurate performance report
 
 - **`roguerust.performance`:** working set, private memory and thread count are read separately, so one value the Rust server's runtime cannot provide no longer zeroes the others. The GC line shows a single collection count, because Unity's collector is not generational (gen0, gen1 and gen2 were always equal).
