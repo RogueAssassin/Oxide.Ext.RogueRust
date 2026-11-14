@@ -1,10 +1,10 @@
 ﻿{
     "Product":  "RogueRust.ProtectedCore",
-    "Version":  "4.4.73",
+    "Version":  "4.4.74",
     "Channel":  0,
-    "PublishedUtc":  "2026-11-14T02:17:49Z",
-    "DownloadUrl":  "https://github.com/RogueAssassin/Oxide.Ext.RogueRust/releases/download/v4.4.73/Oxide.Ext.RogueRust.dll",
-    "Sha256":  "cbdff294562c9c75394ff4cea36140ab606cd1d6895bc4b3c3cb278d766e0d43",
+    "PublishedUtc":  "2026-11-14T05:19:50Z",
+    "DownloadUrl":  "https://github.com/RogueAssassin/Oxide.Ext.RogueRust/releases/download/v4.4.74/Oxide.Ext.RogueRust.dll",
+    "Sha256":  "261db3794e5ce3b60de41c4940e3ab831fff19b75c6629dc3c8f920c3171ead7",
     "Signature":  "",
     "KeyId":  "",
     "MinimumApiLevel":  8
