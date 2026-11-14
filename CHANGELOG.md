@@ -1,3 +1,13 @@
+## 4.4.75 — Default permissions by level
+
+- **Permission levels:** `[RoguePermission]` takes a default level: `[RoguePermission(Default = RoguePermissionLevel.Player)]` or `RoguePermissionLevel.Admin`. Without one it stays `None`, which registers the permission and grants it to nobody, as before.
+  - **Player:** granted to Oxide's `default` group (every player) and the `admin` group.
+  - **Admin:** granted to the `admin` group.
+- **Granted once:** each permission is granted the first time RogueRust registers it, then recorded in `oxide/data/RogueRust/permission_defaults.json` and never granted again. A permission you revoke stays revoked through reloads and updates. A permission you had already granted to any group is left as you set it and only recorded. A group that does not exist is skipped.
+- **Off switch:** set `Auto Grant Default Permissions` to `false` in that file. Each plugin load logs the permissions it granted, in one line.
+- **Paired plugins:** every plugin with permissions declares its levels and needs 4.4.75. Players get: Furnace Splitter, normal removal, Skins basic skinning (`use`, `items`, `craft`, `inventory`, `container`), Building Manager menu, skins and wallpaper, crate reports, and death notices. Everything administrative goes to the admin group, including `roguerustserverrestarter.use`. Opt-outs and rule bypasses are never granted automatically: the DeathNotes `cantsee`, `suppress` and `seeteamonly`, `customplayermessages.hidden`, `buildingmanager.nocost`, `removaltool.override` and `skins.bypassauth`. AdminMenu 2.5.14 and ServerRestarter 2.1.8 stop re-granting their permissions to the admin group on every load.
+- **Tests:** 143 (levels, grant once, existing grants and the switch, the record surviving a restart, missing groups).
+
 ## 4.4.74 — Fewer disk flushes and smaller UI payloads
 
 - **Data saves:** a save is skipped when the file already holds exactly that content. Plugins save their data on every unload and most of those saves change nothing, but each one still wrote the file and flushed it to disk on the main thread (FurnaceSplitter's unload took about 300 ms). A file edited or replaced outside RogueRust is still overwritten as before; the check compares a content hash and the file's last-write time.
