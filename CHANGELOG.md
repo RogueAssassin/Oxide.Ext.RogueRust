@@ -1,3 +1,13 @@
+## 4.4.72 — Lighter on the main thread
+
+- **Console:** `roguerust.performance`, `roguerust.status` and the other multi-line `roguerust.*` commands now show their full report. Rust's console keeps only the last reply a command sets, so only the final line used to appear. Plugin commands run from the console through RogueRust keep every reply line too.
+- **UI:** updating an open panel no longer copies the previous element fingerprints twice per update.
+- **Hot paths left unobfuscated:** the UI document and service, cooldowns, commands, world events, cache, events and the plugin hook interface skip constant and control-flow obfuscation, which re-decoded string literals on every call. Names were never renamed.
+- **GridPower:** a map with no power access points is no longer rescanned on every status or lookup call, and a pole pump that meets destroyed access points rebuilds the index at most once a second.
+- **World search:** `FindEntities` with a type filter tests each entity type's name once per search instead of once per entity.
+- **Skin catalogue:** Steam item definitions are read with members looked up once per type instead of per definition, which shortens catalogue rebuilds at boot.
+- **Paired plugins:** FuelStackOptimizer 2.1.7 (startup churn), Skins 2.3.8 (container hook only while auto skin is in use), ServerRestarter 2.1.7 (countdown jobs stop when done), DeathNotes 2.5.8 (cached victim classification).
+
 ## 4.4.71 — Configs updated in place, no .bak files
 
 - **Config (plugins):** `SaveConfigIfChanged` no longer copies the old file to `<Name>.json.v<old version>.bak`. The config is updated in place: settings already in the file keep their values and settings new in the release are added. On a version change the log lists the settings that were added (`Configuration updated from X to Y; your settings were kept, 2 new settings added: …`), and a warning lists any existing setting the plugin changed or removed, for example a value corrected because it was out of range.
