@@ -1,4 +1,4 @@
-# RogueRust 4.4.74
+# RogueRust 4.4.75
 
 **Shared extension for Rust servers running Oxide or Carbon** · created by RogueAssassin
 
@@ -13,11 +13,18 @@ Plugin catalogue and documentation: **[plugins.roguegaming.com.au](https://plugi
    - **Oxide:** `RustDedicated_Data/Managed/`
    - **Carbon:** `carbon/extensions/`
 3. Restart the server. Extensions only load at startup.
-4. Install the plugins you want from the [plugin repository](https://github.com/RogueAssassin/RogueRust-Plugins). The current plugins need **RogueRust 4.4.69 or newer**; with **4.4.71 or newer** their config files are updated in place and no `.bak` copies are made. **4.4.74 is recommended.**
+4. Install the plugins you want from the [plugin repository](https://github.com/RogueAssassin/RogueRust-Plugins). The current plugins need **RogueRust 4.4.75 or newer**.
 
 To check the download, each release includes `SHA256SUMS.txt` and a signed `RogueRust.manifest.json`.
 
-## What's new in 4.4.74
+## What's new in 4.4.75
+
+- **Default permissions by level.** The first time a plugin loads, its player permissions are granted to Oxide's `default` group (every player) and its admin permissions to the `admin` group. Players get the everyday features: Furnace Splitter, normal removal, basic skinning, Building Manager skins and wallpaper, crate reports and death notices. Administrative permissions go to admins only.
+- **Granted once, never again.** Each permission is recorded in `oxide/data/RogueRust/permission_defaults.json` after it is handled. Revoke one and it stays revoked, and a permission you had already granted to a group is left as you set it. Opt-outs and rule bypasses, such as free upgrades, the removal override and hiding from join messages, are never granted automatically.
+- **Turn it off** by setting `Auto Grant Default Permissions` to `false` in that file. Each plugin load logs the permissions it granted in one line.
+- Plugin authors declare the level on the field: `[RoguePermission(Default = RoguePermissionLevel.Player)]`.
+
+## 4.4.74
 
 - **Fewer disk flushes.** A data save is skipped when the file already holds exactly that content. Plugins save their data every time they unload, and most of those saves change nothing, but each one used to write the file and flush it to disk on the main thread (FurnaceSplitter's unload took about 300 ms). A file you edit or replace yourself is still overwritten as before.
 - **Smaller UI pages.** New UI elements leave out zero offsets, as Oxide's own CUI helper does. That saves about 36 bytes per element, around 13% of a full AdminMenu item page. Opening a panel no longer serializes every element a second time.
