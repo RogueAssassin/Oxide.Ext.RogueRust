@@ -1,4 +1,4 @@
-# RogueRust 4.4.76
+# RogueRust 4.4.77
 
 **Shared extension for Rust servers running Oxide or Carbon** · created by RogueAssassin
 
@@ -13,11 +13,16 @@ Plugin catalogue and documentation: **[plugins.roguegaming.com.au](https://plugi
    - **Oxide:** `RustDedicated_Data/Managed/`
    - **Carbon:** `carbon/extensions/`
 3. Restart the server. Extensions only load at startup.
-4. Install the plugins you want from the [plugin repository](https://github.com/RogueAssassin/RogueRust-Plugins). The current plugins need **RogueRust 4.4.75 or newer**; 4.4.76 is recommended.
+4. Install the plugins you want from the [plugin repository](https://github.com/RogueAssassin/RogueRust-Plugins). The current plugins need **RogueRust 4.4.75 or newer**; 4.4.77 is recommended.
 
 To check the download, each release includes `SHA256SUMS.txt` and a signed `RogueRust.manifest.json`.
 
-## What's new in 4.4.76
+## What's new in 4.4.77
+
+- **No more stall every 5 minutes.** 4.4.76 counted the server's threads by listing every thread on the machine. On a busy host that took over 100 ms, on the main thread, each time the stability sample ran. RogueRust now counts only its own process's threads, in about 1 ms.
+- **Paired plugin:** CustomPlayerMessages 3.1.9. The first join after a load no longer takes about 23 ms; Oxide's chat formatter is now set up while the plugin loads instead of during the join.
+
+## 4.4.76
 
 - **Real process numbers in `roguerust.performance` and `roguerust.soak`.** Working set, private memory and thread count used to show 0, because Rust's Mono runtime doesn't report them through .NET. RogueRust now reads them from the operating system (Windows memory counters and thread list, or `/proc/self/status` on Linux). A value that still can't be read shows as `unavailable`.
 - **Easier-to-read reports.** Uptime and durations show whole seconds (`0:24:02`, or `2d 03:04:05`). The soak report shows one GC count, as the performance report already does. When the scheduler has slow runs, the report names the slowest scheduled job and the plugin that owns it.

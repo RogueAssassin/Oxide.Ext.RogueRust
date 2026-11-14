@@ -1,4 +1,4 @@
-# RogueRust 4.4.76 features
+# RogueRust 4.4.77 features
 
 RogueRust is a shared extension: on its own it adds console diagnostics and automatic updates, but no gameplay. The features below are services that RogueRust plugins use, so each plugin doesn't carry its own copy. For what each plugin does in game, see the [plugin catalogue](https://plugins.roguegaming.com.au).
 
@@ -64,4 +64,4 @@ It runs on Oxide and on Carbon, through Carbon's Oxide compatibility. It doesn't
 
 - Signed automatic updates from this repository's releases; see [AUTO-UPDATE.md](AUTO-UPDATE.md).
 - Console diagnostics: `roguerust.version`, `status`, `health`, `performance`, `soak`, `database`, `update`; `roguerust.commands` lists the rest. `performance` and `status` also write their full report to `RustDedicated.log` (4.4.73).
-- Process working set, private memory and thread count are read from the operating system, because Rust's Mono runtime reports them as 0; a value that can't be read shows as `unavailable` (4.4.76).
+- Process working set, private memory and thread count are read from the operating system, because Rust's Mono runtime reports them as 0; a value that can't be read shows as `unavailable` (4.4.76). The thread count walks only RogueRust's own process, about 1 ms (4.4.77).
