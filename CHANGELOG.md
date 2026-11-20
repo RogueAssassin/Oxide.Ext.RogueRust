@@ -1,3 +1,10 @@
+## 4.4.79 — Latest Rust and Oxide, SQLite check
+
+- **References refreshed** from the server after the November 18 Rust hotfix #3 (protocol 2636.290.1) and Oxide.Rust 2.0.7912. The Oxide patch only moved injection points in three game methods (including the projectile attack handler behind `OnPlayerAttack`) and added `CanBeSplashed`; RogueRust and the plugins use none of them. Checked: 155 unit tests, the public API check, and all 20 plugins compiling against the new files.
+- **SQLite library check.** RogueRust loads the server's own `sqlite3` library by name. If it can't be loaded, for example on a new Linux install, RogueRust now logs one warning at startup, and `roguerust.database` shows `SQLite library: version X loaded` or the reason it is not available.
+- **`roguerust.database` is also written to `RustDedicated.log`,** like `performance` and `status`.
+- **Tests:** 155.
+
 ## 4.4.78 — Windows and Linux
 
 - **Tested on Windows and Linux.** CI now runs the unit tests on Ubuntu as well as Windows, and a release is only published when both pass. The same `Oxide.Ext.RogueRust.dll` runs on both systems.
