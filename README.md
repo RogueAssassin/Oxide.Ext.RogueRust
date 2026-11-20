@@ -1,4 +1,4 @@
-# RogueRust 4.4.78
+# RogueRust 4.4.79
 
 **Shared extension for Rust servers running Oxide or Carbon, on Windows or Linux** · created by RogueAssassin
 
@@ -14,11 +14,17 @@ Plugin catalogue and documentation: **[plugins.roguegaming.com.au](https://plugi
    - **Carbon:** `carbon/extensions/`
    The same DLL and folders are used on Windows and Linux.
 3. Restart the server. Extensions only load at startup.
-4. Install the plugins you want from the [plugin repository](https://github.com/RogueAssassin/RogueRust-Plugins). The current plugins need **RogueRust 4.4.75 or newer**; 4.4.78 is recommended.
+4. Install the plugins you want from the [plugin repository](https://github.com/RogueAssassin/RogueRust-Plugins). The current plugins need **RogueRust 4.4.75 or newer**; 4.4.79 is recommended.
 
 To check the download, each release includes `SHA256SUMS.txt` and a signed `RogueRust.manifest.json`.
 
-## What's new in 4.4.78
+## What's new in 4.4.79
+
+- **Built for the latest Rust and Oxide.** Rebuilt against the November 18 Rust hotfix (protocol 2636.290.1) and Oxide.Rust 2.0.7912. All 20 plugins compile against it and none use the hooks the hotfix changed.
+- **SQLite check for new installs.** If the server's SQLite library can't be loaded (for example on a fresh Linux install), RogueRust now says so once at startup instead of failing on the first database call. `roguerust.database` shows `SQLite library: version X loaded`.
+- **`roguerust.database` is written to the server log** the same way `performance` and `status` are, so the report can be read later from `RustDedicated.log`.
+
+## 4.4.78
 
 - **Windows and Linux.** RogueRust is tested on both on every build. The update signature check now uses the cross-platform .NET API, so automatic updates work the same on either system. See [Windows and Linux](#windows-and-linux).
 - **No false growth warnings after a restart.** `roguerust.performance` used to compare against the sample taken when RogueRust loaded, before Rust had loaded the map, so every restart reported thread and memory "growth" (for example 76 to 152 threads). Growth is now measured from 10 minutes after the server finishes loading. A real leak is still reported.
