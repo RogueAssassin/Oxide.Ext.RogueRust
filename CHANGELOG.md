@@ -1,3 +1,10 @@
+## 4.4.80 — Fewer false growth warnings, Discord mention guard
+
+- **Memory and thread growth compare lowest readings.** Rust's collector runs rarely (7 times in 2.5 hours on a test server), so the managed-memory reading rises and falls in a sawtooth and a single reading before a collection looked like growth. `roguerust.performance` now compares the lowest reading of the first and of the most recent hour of settled samples (settled = 10 minutes after `OnServerInitialized`). Warns at +256 MiB or +50 threads, and only once there are two full hours of samples.
+- **Discord webhooks carry `allowed_mentions` with nothing allowed,** so `@everyone`, `@here` and role mentions in player names or messages are shown as text and never ping.
+- **Paired plugins:** EventDirector 1.4.7 (the Cargo Ship spawn is split over two ticks and timed as `cargo-create` and `cargo-spawn`), FuelStackOptimizer 2.1.9 and HeliCrash 1.0.9.
+- **Tests:** 160.
+
 ## 4.4.79 — Latest Rust and Oxide, SQLite check
 
 - **References refreshed** from the server after the November 18 Rust hotfix #3 (protocol 2636.290.1) and Oxide.Rust 2.0.7912. The Oxide patch only moved injection points in three game methods (including the projectile attack handler behind `OnPlayerAttack`) and added `CanBeSplashed`; RogueRust and the plugins use none of them. Checked: 155 unit tests, the public API check, and all 20 plugins compiling against the new files.
