@@ -1,4 +1,4 @@
-# RogueRust 4.4.79
+# RogueRust 4.4.80
 
 **Shared extension for Rust servers running Oxide or Carbon, on Windows or Linux** · created by RogueAssassin
 
@@ -14,11 +14,16 @@ Plugin catalogue and documentation: **[plugins.roguegaming.com.au](https://plugi
    - **Carbon:** `carbon/extensions/`
    The same DLL and folders are used on Windows and Linux.
 3. Restart the server. Extensions only load at startup.
-4. Install the plugins you want from the [plugin repository](https://github.com/RogueAssassin/RogueRust-Plugins). The current plugins need **RogueRust 4.4.75 or newer**; 4.4.79 is recommended.
+4. Install the plugins you want from the [plugin repository](https://github.com/RogueAssassin/RogueRust-Plugins). The current plugins need **RogueRust 4.4.75 or newer**; 4.4.80 is recommended.
 
 To check the download, each release includes `SHA256SUMS.txt` and a signed `RogueRust.manifest.json`.
 
-## What's new in 4.4.79
+## What's new in 4.4.80
+
+- **Fewer false memory and thread warnings.** `roguerust.performance` compared two single readings, but Rust collects garbage so rarely (7 times in 2.5 hours on a test server) that the reading climbs and drops in a sawtooth, and a reading taken just before a collection looked like a leak. It now compares the lowest readings of an early and a recent hour, which is what the server actually keeps. Needs about two hours of samples after the 10 minute settle time before it reports anything. A real leak still raises the floor and is reported.
+- **Discord webhooks can no longer ping.** Messages RogueRust sends to Discord now carry `allowed_mentions` with nothing allowed, so a player name or chat message containing `@everyone`, `@here` or a role mention shows as text and does not notify the channel.
+
+## 4.4.79
 
 - **Built for the latest Rust and Oxide.** Rebuilt against the November 18 Rust hotfix (protocol 2636.290.1) and Oxide.Rust 2.0.7912. All 20 plugins compile against it and none use the hooks the hotfix changed.
 - **SQLite check for new installs.** If the server's SQLite library can't be loaded (for example on a fresh Linux install), RogueRust now says so once at startup instead of failing on the first database call. `roguerust.database` shows `SQLite library: version X loaded`.

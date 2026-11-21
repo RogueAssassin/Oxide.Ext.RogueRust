@@ -1,4 +1,4 @@
-# RogueRust 4.4.79 features
+# RogueRust 4.4.80 features
 
 RogueRust is a shared extension: on its own it adds console diagnostics and automatic updates, but no gameplay. The features below are services that RogueRust plugins use, so each plugin doesn't carry its own copy. For what each plugin does in game, see the [plugin catalogue](https://plugins.roguegaming.com.au).
 
@@ -58,6 +58,8 @@ It runs on Oxide and on Carbon, through Carbon's Oxide compatibility. It doesn't
 - OS-specific features (process metrics, SQLite) pick the right implementation at runtime.
 - Update signatures are verified the same way on both systems, and every build is tested on both.
 - A missing SQLite library is reported at startup and in `roguerust.database` (4.4.79).
+- Memory and thread growth warnings compare the lowest readings of an early and a recent hour, so uncollected garbage is not reported as a leak (4.4.80).
+- Discord messages cannot ping `@everyone`, `@here` or roles (4.4.80).
 
 ## Running safely
 
